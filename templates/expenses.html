@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Expenses</h1>
+  <p class="muted">Track and manage your daily expenses</p>
+</section>
+
+<section class="cards">
+  <div class="kcard k-blue">
+    <div class="k-top"><div>Total Spent (Month)</div><span class="material-icons">trending_up</span></div>
+    <div class="k-value">₹{{ total_spent }}</div>
+    <div class="k-sub">Across {{ num_transactions }} transactions</div>
+  </div>
+  <div class="kcard k-purple">
+    <div class="k-top"><div>Average / Transaction</div><span class="material-icons">calculate</span></div>
+    <div class="k-value">₹{{ avg_transaction }}</div>
+    <div class="k-sub">Only expenses counted</div>
+  </div>
+</section>
+
+<div class="panel list">
+  <div class="panel-head">
+    <h3>Recent Expenses</h3>
+    <div>
+      <button class="btn icon"><span class="material-icons">tune</span></button>
+      <a class="btn btn-primary" href="#"><span class="material-icons">add</span>Add</a>
+    </div>
+  </div>
+
+  <div class="tlist">
+    {% for e in expenses %}
+    <div class="titem">
+      <div class="ico"><span class="material-icons">
+        {% if e.category == 'Food & Dining' %}restaurant
+        {% elif e.category == 'Transportation' %}directions_bus
+        {% elif e.category == 'Textbooks' %}menu_book
+        {% else %}receipt_long{% endif %}
+      </span></div>
+      <div class="meta">
+        <div class="name">{{ e.name }}</div>
+        <div class="sub"><span class="badge orange">{{ e.category }}</span> {{ e.date }} · {{ e.method }}</div>
+      </div>
+      <div class="amt neg">₹{{ e.amount_str }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

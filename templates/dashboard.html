@@ -1,6 +1,258 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>Dashboard</h1>
-<p>Welcome to your Finance Manager dashboard.</p>
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Financial Dashboard</h1>
+  <p class="muted">Take control of your student finances with AI‑powered insights</p>
+</section>
+
+<!-- KPI cards -->
+<section class="cards">
+  <div class="kcard k-green">
+    <div class="k-top"><div>Total Balance</div><span class="material-icons">credit_card</span></div>
+    <div class="k-value">₹{{ fmt(kpis.total_balance) }}</div>
+    <div class="k-sub">+2.1% from last month</div>
+  </div>
+  <div class="kcard k-blue">
+    <div class="k-top"><div>Monthly Spent</div><span class="material-icons">trending_up</span></div>
+    <div class="k-value">₹{{ fmt(kpis.monthly_spent) }}</div>
+    <div class="k-sub">{{ "%.1f"|format((kpis.monthly_spent/1800.0)*100) }}% of budget used</div>
+  </div>
+  <div class="kcard k-purple">
+    <div class="k-top"><div>Savings Goal</div><span class="material-icons">center_focus_strong</span></div>
+    <div class="k-value">₹{{ fmt(kpis.savings_goal_value) }}</div>
+    <div class="k-sub">25.0% of ₹5000.00</div>
+  </div>
+  <div class="kcard k-orange">
+    <div class="k-top"><div>AI Score</div><span class="material-icons">psychology</span></div>
+    <div class="k-value">{{ "%.1f"|format(kpis.ai_score) }}/10</div>
+    <div class="k-sub">Good financial health</div>
+  </div>
+</section>
+
+<!-- Quick Actions -->
+<section style="margin-bottom:10px">
+  <h3 style="margin:0 0 10px">Quick Actions</h3>
+  <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
+    <a class="btn btn-primary"><span class="material-icons">add</span>Add Expense</a>
+    <button class="btn btn-outline" style="border-color:#cbd5e1"><span class="material-icons">tune</span>Manage Budget</button>
+    <button class="btn btn-outline" style="border-color:#cbd5e1"><span class="material-icons">savings</span>Set Savings Goal</button>
+  </div>
+</section>
+
+<!-- Main grid: charts + insights -->
+<section class="grid two">
+  <!-- Spending Analysis -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Spending Analysis <span class="muted" style="font-weight:600;margin-left:6px">Last 5 months</span></h3>
+    </div>
+
+    <div class="charts two" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div class="muted" style="margin-bottom:6px">Monthly Spending Trend</div>
+        <canvas id="barChart"></canvas>
+      </div>
+      <div>
+        <div class="muted" style="margin-bottom:6px">Category Breakdown (This Month)</div>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Category Details -->
+    <div style="margin-top:16px">
+      <div class="muted" style="margin-bottom:8px;font-weight:600">Category Details</div>
+      <div class="cat-list">
+        {% for i in range(cat_labels|length) %}
+          <div class="cat-row">
+            <span class="dot {% if i==0 %}blue{% elif i==1 %}green{% elif i==2 %}yellow{% elif i==3 %}red{% else %}purple{% endif %}"></span>
+            <span class="cat-name">{{ cat_labels[i] }}</span>
+            <strong class="cat-amt">₹{{ "{:,.2f}".format(cat_values[i]) }}</strong>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Financial Insights -->
+  <div class="panel">
+    <div class="panel-head"><h3><span class="material-icons" style="vertical-align:middle;margin-right:6px;color:#7c3aed">psychology</span>AI Financial Insights</h3></div>
+
+    <div class="insight warn">
+      <div class="ic"><span class="material-icons">warning_amber</span></div>
+      <div class="tx">
+        <div class="title">High Food Spending <span class="chip high">high</span></div>
+        <p class="desc">You've spent 23% more on food this month. Consider meal prepping to save ₹150/month.</p>
+        <div class="tip">Potential savings: <strong>₹150.00/month</strong></div>
+      </div>
+    </div>
+
+    <div class="insight ok">
+      <div class="ic"><span class="material-icons">check_circle</span></div>
+      <div class="tx">
+        <div class="title">Transportation Optimized <span class="chip low">low</span></div>
+        <p class="desc">Great job! You're saving ₹45/month by using public transport instead of rideshares.</p>
+        <div class="tip">Potential savings: <strong>₹45.00/month</strong></div>
+      </div>
+    </div>
+
+    <div class="insight mid">
+      <div class="ic"><span class="material-icons">insights</span></div>
+      <div class="tx">
+        <div class="title">Textbook Savings <span class="chip medium">medium</span></div>
+        <p class="desc">Try renting textbooks instead of buying. You could save up to ₹120 this semester.</p>
+        <div class="tip">Potential savings: <strong>₹120.00/month</strong></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <div class="row"><strong>Financial Health Score</strong><strong style="color:#7c3aed">{{ "%.1f"|format(kpis.ai_score) }} / 10</strong></div>
+      <div class="bar big purple"><span style="width: {{ (kpis.ai_score/10*100)|round(1) }}%"></span></div>
+      <div class="muted" style="margin-top:6px">Your financial habits are on track! Focus on reducing food expenses to reach 9.0.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Lower 3-column area ===== -->
+<section class="grid three" style="margin-top:12px">
+  <!-- Recent Transactions -->
+  <div class="panel list">
+    <div class="panel-head">
+      <h3>Recent Transactions</h3>
+      <div>
+        <button class="btn icon"><span class="material-icons">tune</span></button>
+        <a class="btn btn-outline" style="padding:8px 10px"><span class="material-icons">visibility</span>View All</a>
+      </div>
+    </div>
+
+    <div class="tlist">
+      {% for t in recent %}
+      <div class="titem">
+        <div class="ico"><span class="material-icons">
+          {% if t.badge[0]=='Food & Dining' %}restaurant
+          {% elif t.badge[0]=='Transportation' %}directions_bus
+          {% elif t.badge[0]=='Textbooks' %}menu_book
+          {% elif t.is_income %}payments
+          {% else %}receipt_long{% endif %}
+        </span></div>
+        <div class="meta">
+          <div class="name">{{ t.name }}</div>
+          <div class="sub">
+            <span class="badge {{ t.badge[1] }}">{{ t.badge[0] }}</span>
+            {{ t.date }}
+          </div>
+        </div>
+        <div class="amt {{ 'pos' if t.is_income else 'neg' }}">
+          {{ '+' if t.is_income else '₹' }}{{ t.amount_str if not t.is_income else '₹' ~ t.amount_str }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="panel" style="margin-top:10px">
+      <div class="row"><strong>This Week's Spending</strong><strong>₹237.37</strong></div>
+      <div class="bar big"><span style="width:65%"></span></div>
+      <div class="muted">65% of weekly budget used</div>
+    </div>
+  </div>
+
+  <!-- Budget Overview -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Budget Overview</h3>
+      <button class="btn icon"><span class="material-icons">settings</span>Manage</button>
+    </div>
+
+    <div class="panel" style="background:#f8fbff;border-color:#e6eefc">
+      <div class="row" style="font-weight:700">
+        <span>Monthly Budget</span>
+        <span>₹{{ month_spent }} / ₹{{ month_limit }}</span>
+      </div>
+      <div class="bar big"><span style="width: {{ month_pct }}%"></span></div>
+      <div class="muted">{{ month_pct }}% used — ₹{{ month_left }} remaining</div>
+    </div>
+
+    <div style="margin-top:12px;font-weight:700">Category Breakdown</div>
+    <div style="display:grid;gap:12px;margin-top:8px">
+      {% for c in cats %}
+      <div>
+        <div class="row"><span>{{ c.name }}</span><strong>₹{{ "{:,.2f}".format(c.spent) }} / ₹{{ "{:,.2f}".format(c.limit) }}</strong></div>
+        <div class="bar {% if c.color=='red' %}red{% elif c.color=='yellow' %}yellow{% elif c.color=='blue' %}blue{% else %}green{% endif %}">
+          <span style="width: {{ c.pct }}%"></span>
+        </div>
+        <div class="muted">{{ c.pct }}% used <span style="float:right">₹{{ "{:,.2f}".format(c.left) }} left</span></div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="tipbox" style="margin-top:12px">
+      <span class="material-icons" style="color:#10b981;margin-right:8px">lightbulb</span>
+      <div>Budget Tip — You're on track this month! Consider moving some unused housing budget to your emergency fund.</div>
+    </div>
+  </div>
+
+  <!-- Savings Goals -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Savings Goals</h3>
+      <button class="btn icon"><span class="material-icons">add</span>Add Goal</button>
+    </div>
+
+    <div class="panel" style="background:#f1f9f1;border-color:#e0f2e9">
+      <div class="row" style="font-weight:700">
+        <span>Total Savings Progress</span>
+        <span>₹{{ total_current }} / ₹{{ total_target }}</span>
+      </div>
+      <div class="bar big"><span style="width: {{ total_pct }}%"></span></div>
+      <div class="muted">{{ total_pct }}% of total goals achieved</div>
+    </div>
+
+    {% for g in goals %}
+    <div class="goal panel" style="margin-top:10px">
+      <div class="row">
+        <div class="row" style="gap:8px">
+          <span class="material-icons" style="color:#64748b">savings</span>
+          <strong>{{ g.name }}</strong>
+        </div>
+        <strong>₹{{ "{:,.2f}".format(g.current) }} / ₹{{ "{:,.2f}".format(g.target) }}</strong>
+      </div>
+      <div class="bar"><span style="width: {{ g.pct }}%"></span></div>
+      <div class="muted">{{ g.pct }}% complete — Due: {{ g.due }}
+        <span class="chip {% if g.priority=='high' %}high{% elif g.priority=='medium' %}medium{% else %}low{% endif %}" style="margin-left:6px">
+          {{ g.priority }} priority
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+
+    <div class="tipbox purple" style="margin-top:12px">
+      <span class="material-icons" style="color:#7c3aed;margin-right:8px">tips_and_updates</span>
+      <div>Savings Tip — Set up automatic transfers of ₹50/week to reach your emergency fund 2 months earlier!</div>
+    </div>
+  </div>
+</section>
+
+<!-- Charts init -->
+<script>
+  const days = {{ days|tojson }};
+  const dayValues = {{ day_values|tojson }};
+  const catLabels = {{ cat_labels|tojson }};
+  const catValues = {{ cat_values|tojson }};
+
+  if (document.getElementById('barChart')){
+    new Chart(document.getElementById('barChart'), {
+      type:'bar',
+      data:{ labels: ['Jan','Feb','Mar','Apr','May'], datasets:[{ data:[1200,1350,1100,1500,1250] }] },
+      options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, suggestedMax:1600 } } }
+    });
+  }
+  if (document.getElementById('pieChart')){
+    new Chart(document.getElementById('pieChart'), {
+      type:'pie',
+      data:{ labels: catLabels, datasets:[{ data: catValues }] },
+      options:{ plugins:{ legend:{ position:'right' } } }
+    });
+  }
+</script>
 {% endblock %}

@@ -1,0 +1,224 @@
+/* =========================
+   StudentFinance Light Theme
+   ========================= */
+:root{
+  --bg:#eef3ff;          /* page background */
+  --panel:#ffffff;       /* cards/panels */
+  --line:#e6e9f5;        /* borders */
+  --text:#0f172a;        /* primary text */
+  --muted:#64748b;       /* secondary text */
+  --shadow:0 6px 24px rgba(15, 23, 42, .08);
+
+  --green:#22C55E;
+  --blue:#2563EB;
+  --purple:#8B5CF6;
+  --orange:#F97316;
+
+  --chip-high:#FEE2E2;   /* red-100 */
+  --chip-medium:#FEF3C7; /* amber-100 */
+  --chip-low:#DCFCE7;    /* green-100 */
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text)}
+
+/* Top navigation */
+.topnav{
+  position:sticky;top:0;z-index:10;
+  background:#fff;border-bottom:1px solid var(--line);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px
+}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,#7C3AED,#22D3EE);
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  box-shadow:var(--shadow)
+}
+.brand-text .name{font-weight:800}
+.brand-text .tagline{font-size:12px;color:var(--muted);margin-top:2px}
+
+.nav a{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:10px;color:#0f172a;opacity:.9;margin-left:6px;
+  text-decoration:none
+}
+.nav a.active{background:#eaf0ff;border:1px solid #d6e1ff}
+
+/* Page wrapper */
+.page{max-width:1280px;margin:0 auto;padding:24px}
+
+/* Helpers */
+.muted{color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
+
+/* Section: hero */
+.hero h1{font-size:32px;margin:8px 0 4px}
+.hero p{color:var(--muted);margin:0 0 18px}
+
+/* KPI cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:18px}
+.kcard{
+  border-radius:16px;color:#fff;padding:18px;box-shadow:var(--shadow);min-height:120px
+}
+.k-top{display:flex;align-items:center;justify-content:space-between;opacity:.95;font-weight:600}
+.k-value{font-size:34px;font-weight:800;margin-top:6px}
+.k-sub{opacity:.95;margin-top:8px}
+.k-green{background:var(--green)}
+.k-blue{background:var(--blue)}
+.k-purple{background:var(--purple)}
+.k-orange{background:var(--orange)}
+
+/* Grid layouts */
+.grid.two{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
+.grid.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+
+/* Panels / cards */
+.panel{
+  background:var(--panel);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--shadow);padding:16px
+}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.panel h3{margin:0}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:10px;border:none;cursor:pointer;
+  font-weight:700;box-shadow:var(--shadow);text-decoration:none
+}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-outline{background:#fff;border:2px solid var(--line);color:#111827}
+.btn.icon{background:#f1f5ff}
+
+/* Flash messages (optional) */
+.flash{margin:8px 0}
+.flash-item{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:#fff}
+
+/* List / transactions */
+.panel.list .tlist{display:grid;gap:10px}
+.titem{
+  display:flex;align-items:center;gap:12px;background:#fff;
+  border:1px solid var(--line);border-radius:12px;padding:10px
+}
+.titem .ico{
+  width:36px;height:36px;border-radius:10px;background:#eef2ff;
+  display:flex;align-items:center;justify-content:center;color:#4f46e5
+}
+.titem .name{font-weight:700}
+.titem .sub{color:var(--muted)}
+.badge{
+  display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;margin-right:6px;background:#fff3e8
+}
+.badge.orange{background:#fff3e8;color:#b45309}
+.badge.green{background:#ecfdf5;color:#065f46}
+.badge.yellow{background:#fff7ed;color:#92400e}
+.badge.blue{background:#e0e7ff;color:#4338ca}
+.amt{margin-left:auto;font-weight:800}
+.amt.neg{color:#b91c1c}
+.amt.pos{color:#16a34a}
+
+/* Progress bars */
+.bar{height:8px;background:#eef2ff;border-radius:999px;overflow:hidden}
+.bar span{display:block;height:100%;background:#2563EB}
+.bar.big{height:10px;margin:6px 0}
+.bar.red span{background:#ef4444}
+.bar.yellow span{background:#f59e0b}
+.bar.blue span{background:#2563EB}
+.bar.green span{background:#10B981}
+
+/* Chips / priority */
+.chip{padding:2px 8px;border-radius:999px;font-size:12px;margin-left:6px}
+.chip.high{background:var(--chip-high);color:#be123c}
+.chip.medium{background:var(--chip-medium);color:#92400e}
+.chip.low{background:var(--chip-low);color:#166534}
+
+/* Budget totals block */
+.budget-total .muted{margin-top:6px}
+
+/* Charts area (optional helpers) */
+canvas{max-width:100%}
+
+/* Responsive */
+@media (max-width: 1100px){
+  .cards{grid-template-columns:1fr 1fr}
+  .grid.two{grid-template-columns:1fr}
+  .grid.three{grid-template-columns:1fr 1fr}
+}
+@media (max-width: 720px){
+  .nav a{padding:6px 10px}
+  .cards{grid-template-columns:1fr}
+  .grid.three{grid-template-columns:1fr}
+}
+
+/* Category list */
+.cat-list{display:grid;gap:10px}
+.cat-row{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px}
+.cat-row .cat-name{flex:1}
+.cat-row .cat-amt{font-weight:800}
+.dot{width:10px;height:10px;border-radius:999px;display:inline-block}
+.dot.blue{background:#3b82f6}
+.dot.green{background:#10b981}
+.dot.yellow{background:#f59e0b}
+.dot.red{background:#ef4444}
+.dot.purple{background:#8b5cf6}
+
+/* Insights */
+.insight{display:flex;gap:12px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff;margin-bottom:10px}
+.insight .ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:#f1f5ff;color:#4f46e5}
+.insight .title{font-weight:700;margin-bottom:4px}
+.insight .desc{margin:0 0 6px;color:var(--muted)}
+.insight.warn{background:#fff7ed;border-color:#fde3c5}
+.insight.ok{background:#f0fdf4;border-color:#d3f5da}
+.insight.mid{background:#eef2ff;border-color:#dfe4ff}
+
+/* Purple progress for health score */
+.bar.purple span{background:#8b5cf6}
+
+/* --- Badges bổ sung --- */
+.badge.purple{background:#ede9fe;color:#6d28d9}
+
+/* --- Panel lồng panel (nhỏ gọn, giống mockup) --- */
+.panel .panel{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  box-shadow:none;
+  background:#fff;
+}
+
+/* --- Tip boxes (Budget Tip / Savings Tip) --- */
+.tipbox{
+  display:flex;align-items:flex-start;gap:8px;
+  padding:12px;border:1px solid var(--line);
+  border-radius:12px;background:#fff;color:var(--text);
+  box-shadow:var(--shadow);
+}
+.tipbox.purple{background:#f6f3ff;border-color:#e9e2ff}
+
+/* --- Weekly spending widget (trong Recent Transactions) --- */
+.panel .row strong{font-weight:800}
+
+/* --- Savings Goals items --- */
+.goal{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+.goal .row{margin:6px 0}
+
+/* --- Icons trong các thẻ insight/tip/goal --- */
+.insight .ic .material-icons,
+.tipbox .material-icons{font-size:20px}
+
+/* --- Nút icon nhỏ ở tiêu đề panel --- */
+.btn.icon{
+  padding:8px 10px;border:1px solid var(--line);
+  background:#f8fafc;color:#111827;font-weight:600
+}
+
+/* --- Biểu đồ & lưới nhỏ --- */
+.charts.two canvas{max-height:260px}
+
+/* --- Điều chỉnh 3 cột vùng dưới cùng cho mobile --- */
+@media (max-width:1100px){
+  .grid.three{grid-template-columns:1fr}
+}
