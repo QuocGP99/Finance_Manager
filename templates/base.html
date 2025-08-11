@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ title or "StudentFinance" }}</title>
+  <title>{{ title or "FinanceManager" }}</title>
 
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -18,6 +18,49 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
+  <!-- Helper vẽ doughnut có % dùng lại ở nhiều trang -->
+  <script>
+    window.renderDoughnutWithPercents = function (canvasEl, labels, values, legendPos = 'right') {
+      try {
+        if (window.ChartDataLabels) { Chart.register(ChartDataLabels); }
+        return new Chart(canvasEl, {
+          type: 'doughnut',
+          data: { labels: labels, datasets: [{ data: values }] },
+          options: {
+            plugins: {
+              legend: { position: legendPos },
+              datalabels: window.ChartDataLabels ? {
+                formatter: (value, ctx) => {
+                  const data = ctx.chart.data.datasets[0].data || [];
+                  const total = data.reduce((a, b) => a + b, 0);
+                  const pct = total ? (value / total) * 100 : 0;
+                  return pct.toFixed(1) + '%';
+                },
+                color: '#fff',
+                font: { weight: '700' },
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                borderRadius: 4,
+                padding: 4
+              } : undefined,
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    const val = ctx.parsed;
+                    const sum = (ctx.dataset.data || []).reduce((a, b) => a + b, 0);
+                    const pct = sum ? (val / sum * 100) : 0;
+                    return `${ctx.label}: {{ CURRENCY }}${val.toLocaleString()} (${pct.toFixed(1)}%)`;
+                  }
+                }
+              }
+            }
+          }
+        });
+      } catch (e) {
+        console.error('renderDoughnutWithPercents error:', e);
+      }
+    };
+  </script>
+
   {% block head_extra %}{% endblock %}
 </head>
 <body>
@@ -25,7 +68,7 @@
     <div class="brand">
       <div class="logo"><span class="material-icons">school</span></div>
       <div class="brand-text">
-        <div class="name">StudentFinance</div>
+        <div class="name">Finance Manager</div>
         <div class="tagline">AI‑Powered Finance Manager</div>
       </div>
     </div>

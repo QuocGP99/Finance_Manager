@@ -8,16 +8,16 @@
 <div class="panel">
   <div class="panel-head"><h3>Monthly Budget</h3></div>
   <div class="budget-total">
-    <div class="row"><strong>Used</strong><strong>₹{{ month_spent }} / ₹{{ month_limit }}</strong></div>
+    <div class="row"><strong>Used</strong><strong>{{ CURRENCY }}{{ month_spent }} / {{ CURRENCY }}{{ month_limit }}</strong></div>
     <div class="bar big"><span style="width: {{ month_pct }}%"></span></div>
-    <div class="muted">{{ month_pct }}% used — ₹{{ month_left }} remaining</div>
+    <div class="muted">{{ month_pct }}% used — {{ CURRENCY }}{{ month_left }} remaining</div>
   </div>
 </div>
 
 <section class="grid three" style="margin-top:14px">
   {% for c in cats %}
   <div class="panel">
-    <div class="row"><strong>{{ c.name }}</strong><strong>₹{{ "{:,.2f}".format(c.spent) }} / ₹{{ "{:,.2f}".format(c.limit) }}</strong></div>
+    <div class="row"><strong>{{ c.name }}</strong><strong>{{ CURRENCY }}{{ "{:,.2f}".format(c.spent) }} / {{ CURRENCY }}{{ "{:,.2f}".format(c.limit) }}</strong></div>
     <div class="bar {% if c.color=='red' %}red{% elif c.color=='yellow' %}yellow{% elif c.color=='blue' %}blue{% else %}green{% endif %}">
       <span style="width: {{ c.pct }}%"></span>
     </div>

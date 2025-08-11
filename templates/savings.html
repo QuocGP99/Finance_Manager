@@ -7,7 +7,7 @@
 
 <div class="panel">
   <div class="panel-head"><h3>Total Savings Progress</h3></div>
-  <div class="row"><strong>₹{{ total_current }} / ₹{{ total_target }}</strong><strong>{{ total_pct }}%</strong></div>
+  <div class="row"><strong>{{ CURRENCY }}{{ total_current }} / {{ CURRENCY }}{{ total_target }}</strong><strong>{{ total_pct }}%</strong></div>
   <div class="bar big"><span style="width: {{ total_pct }}%"></span></div>
   <div class="muted">{{ total_pct }}% of total goals achieved</div>
 </div>
@@ -15,7 +15,7 @@
 <section class="grid two" style="margin-top:14px">
   {% for g in goals %}
   <div class="panel">
-    <div class="row"><span>{{ g.name }}</span><strong>₹{{ "{:,.2f}".format(g.current) }} / ₹{{ "{:,.2f}".format(g.target) }}</strong></div>
+    <div class="row"><span>{{ g.name }}</span><strong>{{ CURRENCY }}{{ "{:,.2f}".format(g.current) }} / {{ CURRENCY }}{{ "{:,.2f}".format(g.target) }}</strong></div>
     <div class="bar"><span style="width: {{ g.pct }}%"></span></div>
     <div class="muted">Due: {{ g.due }} — 
       <span class="chip {% if g.priority=='high' %}high{% elif g.priority=='medium' %}medium{% else %}low{% endif %}">{{ g.priority }} priority</span>

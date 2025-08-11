@@ -80,7 +80,7 @@
                 const val = ctx.parsed;
                 const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
                 const pct = sum ? (val / sum * 100) : 0;
-                return `${ctx.label}: ₹${val.toLocaleString()} (${pct.toFixed(1)}%)`;
+                return `${ctx.label}: {{ CURRENCY }}${val.toLocaleString()} (${pct.toFixed(1)}%)`;
               }
             }
           }

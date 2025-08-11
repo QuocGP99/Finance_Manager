@@ -11,18 +11,18 @@
 <section class="cards">
   <div class="kcard k-green">
     <div class="k-top"><div>Total Balance</div><span class="material-icons">credit_card</span></div>
-    <div class="k-value">₹{{ fmt(kpis.total_balance) }}</div>
+    <div class="k-value">{{CURRENCY}}{{ fmt(kpis.total_balance) }}</div>
     <div class="k-sub">+2.1% from last month</div>
   </div>
   <div class="kcard k-blue">
     <div class="k-top"><div>Monthly Spent</div><span class="material-icons">trending_up</span></div>
-    <div class="k-value">₹{{ fmt(kpis.monthly_spent) }}</div>
+    <div class="k-value">{{CURRENCY}}{{ fmt(kpis.monthly_spent) }}</div>
     <div class="k-sub">{{ "%.1f"|format((kpis.monthly_spent/1800.0)*100) }}% of budget used</div>
   </div>
   <div class="kcard k-purple">
     <div class="k-top"><div>Savings Goal</div><span class="material-icons">center_focus_strong</span></div>
-    <div class="k-value">₹{{ fmt(kpis.savings_goal_value) }}</div>
-    <div class="k-sub">25.0% of ₹5000.00</div>
+    <div class="k-value">{{CURRENCY}}{{ fmt(kpis.savings_goal_value) }}</div>
+    <div class="k-sub">25.0% of {{ CURRENCY }}5000.00</div>
   </div>
   <div class="kcard k-orange">
     <div class="k-top"><div>AI Score</div><span class="material-icons">psychology</span></div>
@@ -68,7 +68,7 @@
           <div class="cat-row">
             <span class="dot {% if i==0 %}blue{% elif i==1 %}green{% elif i==2 %}yellow{% elif i==3 %}red{% else %}purple{% endif %}"></span>
             <span class="cat-name">{{ cat_labels[i] }}</span>
-            <strong class="cat-amt">₹{{ "{:,.2f}".format(cat_values[i]) }}</strong>
+            <strong class="cat-amt">{{ CURRENCY }}{{ "{:,.2f}".format(cat_values[i]) }}</strong>
           </div>
         {% endfor %}
       </div>
@@ -84,7 +84,7 @@
       <div class="tx">
         <div class="title">High Food Spending <span class="chip high">high</span></div>
         <p class="desc">You've spent 23% more on food this month. Consider meal prepping to save ₹150/month.</p>
-        <div class="tip">Potential savings: <strong>₹150.00/month</strong></div>
+        <div class="tip">Potential savings: <strong>{{ CURRENCY }}150.00/month</strong></div>
       </div>
     </div>
 
@@ -92,8 +92,8 @@
       <div class="ic"><span class="material-icons">check_circle</span></div>
       <div class="tx">
         <div class="title">Transportation Optimized <span class="chip low">low</span></div>
-        <p class="desc">Great job! You're saving ₹45/month by using public transport instead of rideshares.</p>
-        <div class="tip">Potential savings: <strong>₹45.00/month</strong></div>
+        <p class="desc">Great job! You're saving {{CURRENCY}}45/month by using public transport instead of rideshares.</p>
+        <div class="tip">Potential savings: <strong>{{ CURRENCY }}45.00/month</strong></div>
       </div>
     </div>
 
@@ -102,7 +102,7 @@
       <div class="tx">
         <div class="title">Textbook Savings <span class="chip medium">medium</span></div>
         <p class="desc">Try renting textbooks instead of buying. You could save up to ₹120 this semester.</p>
-        <div class="tip">Potential savings: <strong>₹120.00/month</strong></div>
+        <div class="tip">Potential savings: <strong>{{CURRENCY}}120.00/month</strong></div>
       </div>
     </div>
 
@@ -144,14 +144,14 @@
           </div>
         </div>
         <div class="amt {{ 'pos' if t.is_income else 'neg' }}">
-          {{ '+' if t.is_income else '₹' }}{{ t.amount_str if not t.is_income else '₹' ~ t.amount_str }}
+          {{ '+' if t.is_income else '{{ CURRENCY }}' }}{{ t.amount_str if not t.is_income else '{{ CURRENCY }}' ~ t.amount_str }}
         </div>
       </div>
       {% endfor %}
     </div>
 
     <div class="panel" style="margin-top:10px">
-      <div class="row"><strong>This Week's Spending</strong><strong>₹237.37</strong></div>
+      <div class="row"><strong>This Week's Spending</strong><strong>{{ CURRENCY }}237.37</strong></div>
       <div class="bar big"><span style="width:65%"></span></div>
       <div class="muted">65% of weekly budget used</div>
     </div>
@@ -167,17 +167,17 @@
     <div class="panel" style="background:#f8fbff;border-color:#e6eefc">
       <div class="row" style="font-weight:700">
         <span>Monthly Budget</span>
-        <span>₹{{ month_spent }} / ₹{{ month_limit }}</span>
+        <span>₹{{ month_spent }} / {{ CURRENCY }}{{ month_limit }}</span>
       </div>
       <div class="bar big"><span style="width: {{ month_pct }}%"></span></div>
-      <div class="muted">{{ month_pct }}% used — ₹{{ month_left }} remaining</div>
+      <div class="muted">{{ month_pct }}% used — {{ CURRENCY }}{{ month_left }} remaining</div>
     </div>
 
     <div style="margin-top:12px;font-weight:700">Category Breakdown</div>
     <div style="display:grid;gap:12px;margin-top:8px">
       {% for c in cats %}
       <div>
-        <div class="row"><span>{{ c.name }}</span><strong>₹{{ "{:,.2f}".format(c.spent) }} / ₹{{ "{:,.2f}".format(c.limit) }}</strong></div>
+        <div class="row"><span>{{ c.name }}</span><strong>{{ CURRENCY }}{{ "{:,.2f}".format(c.spent) }} / {{ CURRENCY }}{{ "{:,.2f}".format(c.limit) }}</strong></div>
         <div class="bar {% if c.color=='red' %}red{% elif c.color=='yellow' %}yellow{% elif c.color=='blue' %}blue{% else %}green{% endif %}">
           <span style="width: {{ c.pct }}%"></span>
         </div>
@@ -202,7 +202,7 @@
     <div class="panel" style="background:#f1f9f1;border-color:#e0f2e9">
       <div class="row" style="font-weight:700">
         <span>Total Savings Progress</span>
-        <span>₹{{ total_current }} / ₹{{ total_target }}</span>
+        <span>{{ CURRENCY }}{{ total_current }} / {{ CURRENCY }}{{ total_target }}</span>
       </div>
       <div class="bar big"><span style="width: {{ total_pct }}%"></span></div>
       <div class="muted">{{ total_pct }}% of total goals achieved</div>
@@ -215,7 +215,7 @@
           <span class="material-icons" style="color:#64748b">savings</span>
           <strong>{{ g.name }}</strong>
         </div>
-        <strong>₹{{ "{:,.2f}".format(g.current) }} / ₹{{ "{:,.2f}".format(g.target) }}</strong>
+        <strong>₹{{ "{:,.2f}".format(g.current) }} / {{CURRENCY}}{{ "{:,.2f}".format(g.target) }}</strong>
       </div>
       <div class="bar"><span style="width: {{ g.pct }}%"></span></div>
       <div class="muted">{{ g.pct }}% complete — Due: {{ g.due }}
