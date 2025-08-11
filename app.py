@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from sample_data import (
     days, day_values, cat_labels, cat_values, kpis,
     sample_expenses, budget_categories, savings_goals,
@@ -83,20 +83,35 @@ def dashboard():
 
 @app.route("/expenses")
 def expenses():
-    expenses_only = [e for e in sample_expenses if e["amount"] < 0]
-    total_spent = sum(-e["amount"] for e in expenses_only)
-    num_transactions = len(expenses_only)
+    # tất cả chi (amount < 0)
+    expenses_all = [e for e in sample_expenses if e["amount"] < 0]
+
+    # danh sách danh mục (unique, có "All Categories")
+    categories = sorted({e.get("category", "Khác") for e in expenses_all})
+    selected = request.args.get("category", "All")
+
+    # lọc theo danh mục nếu chọn
+    if selected and selected != "All":
+        expenses_filtered = [e for e in expenses_all if e.get("category") == selected]
+    else:
+        expenses_filtered = expenses_all
+
+    #KPI theo danh sách đã lọc
+    total_spent = sum(-e["amount"] for e in expenses_filtered)
+    num_transactions = len(expenses_filtered)
     avg_transaction = (total_spent / num_transactions) if num_transactions else 0
 
-    for e in expenses_only:
+    # string tiền tệ
+    for e in expenses_filtered:
         e["amount_str"] = fmt_vnd(-e["amount"])
-
     return render_template(
         "expenses.html",
         title="FinanceManager · Expenses",
         active_page="expenses",
         CURRENCY=CURRENCY, fmt=fmt_vnd,
-        expenses=expenses_only,
+        expenses=expenses_filtered,
+        categories=categories,
+        selected=selected,
         total_spent=fmt_vnd(total_spent),
         num_transactions=num_transactions,
         avg_transaction=fmt_vnd(avg_transaction)

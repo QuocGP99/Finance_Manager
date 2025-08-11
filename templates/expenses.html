@@ -1,48 +1,87 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="hero">
-  <h1>Expenses</h1>
+  <h1>Expenses Tracker</h1>
   <p class="muted">Track and manage your daily expenses</p>
 </section>
 
+<!-- KPI Cards -->
 <section class="cards">
   <div class="kcard k-blue">
-    <div class="k-top"><div>Total Spent (Month)</div><span class="material-icons">trending_up</span></div>
+    <div class="k-top"><div>Total Spent (Month)</div><span class="material-icons">payments</span></div>
     <div class="k-value">{{ CURRENCY }}{{ total_spent }}</div>
-    <div class="k-sub">Across {{ num_transactions }} transactions</div>
   </div>
   <div class="kcard k-purple">
-    <div class="k-top"><div>Average / Transaction</div><span class="material-icons">calculate</span></div>
+    <div class="k-top"><div><b>Number of Transactions</b></div><span class="material-icons">receipt</span></div>
+    <div class="k-value">{{ num_transactions }}</div>
+  </div>
+  <div class="kcard k-orange">
+    <div class="k-top"><div>Average per Transaction</div><span class="material-icons">stacked_line_chart</span></div>
     <div class="k-value">{{ CURRENCY }}{{ avg_transaction }}</div>
-    <div class="k-sub">Only expenses counted</div>
+</section>
+
+<!-- List + Filter + Add -->
+<div class="panel">
+  <div class="row" style="gap:12px; align-items: center;">
+    <h3 style="margin:0">Recent Expenses</h3>
+
+    <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
+      <!-- Filter -->
+       <form method="get" action="{{ url_for('expenses')}}" style="display:flex; align-items: center; gap: 8px;">
+        <span class="material-icons" style="font-size: 20px; color: black">filter_list</span>
+        <select name="category" onchange="this.form.submit()" style="padding: 8px 10px;border: 1px solid var(--line);border-radius: 10px;background: #fff;" >
+          <option value="All" {{ 'selected' if selected=='All' else ''}}>All Categories</option>
+          {% for cat in categories %}
+            <option value="{{ cat }}" {{ 'selected' if selected==cat else '' }}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+       </form>
+      <!-- Add Expense -->
+       <a class="btn btn-primary" href="#" title="Add Expense">
+        <span class="material-icons">add</span>
+        <span>Add Expense</span>
+       </a>
+    </div>
+  </div>
+  <!-- Expenses List -->
+   <div class="tlist" style="margin-top: 12px; display: grid; gap: 10px;">
+    {% for e in expenses %}
+      <div class="titem">
+          <div class="ico"><span class="material-icons">shopping_bag</span></div>
+          <div style="flex:1">
+            <div class="name">{{ e.name }}</div>
+            <div class="sub">
+              {{ e.date }} &nbsp;|&nbsp; {{ e.method }}
+              {% if e.category %}
+              <span class="badge
+                  {% if e.category in ['Ăn uống', 'Food & Dining'] %}orange
+                  {% elif e.category in ['Di chuyển', 'Transportation'] %}blue
+                  {% elif e.category in ['Giải trí', 'Entertainment'] %}purple
+                  {% elif e.category in ['Mua sắm', 'Shopping'] %}green
+                  {% elif e.category in ['Hóa đơn', 'Bills'] %}red
+                  {% else %}gray{% endif %}">
+                {{ e.category }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="amt neg">{{ CURRENCY }}{{ e.amount_str }}</div>
+
+          <!-- actions -->
+        <div style="display:flex; gap:6px; margin-left:8px;">
+          <button class="btn icon" title="Edit" onclick="alert('Demo: Edit expense')">
+            <span class="material-icons">edit</span>
+          </button>
+          <button class="btn icon" title="Delete" onclick="if(confirm('Delete this expense?')) alert('Demo: Deleted')">
+            <span class="material-icons">delete</span>
+          </button>
+        </div>
+      </div>
+    {% else %}
+      <div class="flash-item" style="background:#fff;">No expenses found.</div>
+    {% endfor %}
   </div>
 </section>
 
-<div class="panel list">
-  <div class="panel-head">
-    <h3>Recent Expenses</h3>
-    <div>
-      <button class="btn icon"><span class="material-icons">tune</span></button>
-      <a class="btn btn-primary" href="#"><span class="material-icons">add</span>Add</a>
-    </div>
-  </div>
-
-  <div class="tlist">
-    {% for e in expenses %}
-    <div class="titem">
-      <div class="ico"><span class="material-icons">
-        {% if e.category == 'Food & Dining' %}restaurant
-        {% elif e.category == 'Transportation' %}directions_bus
-        {% elif e.category == 'Textbooks' %}menu_book
-        {% else %}receipt_long{% endif %}
-      </span></div>
-      <div class="meta">
-        <div class="name">{{ e.name }}</div>
-        <div class="sub"><span class="badge orange">{{ e.category }}</span> {{ e.date }} · {{ e.method }}</div>
-      </div>
-      <div class="amt neg">{{ CURRENCY }}{{ e.amount_str }}</div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
 {% endblock %}
