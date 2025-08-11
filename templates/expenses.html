@@ -18,57 +18,59 @@
   <div class="kcard k-orange">
     <div class="k-top"><div>Average per Transaction</div><span class="material-icons">stacked_line_chart</span></div>
     <div class="k-value">{{ CURRENCY }}{{ avg_transaction }}</div>
+  </div>
 </section>
 
 <!-- List + Filter + Add -->
-<div class="panel">
+<section class="panel">
   <div class="row" style="gap:12px; align-items: center;">
     <h3 style="margin:0">Recent Expenses</h3>
 
     <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
       <!-- Filter -->
-       <form method="get" action="{{ url_for('expenses')}}" style="display:flex; align-items: center; gap: 8px;">
-        <span class="material-icons" style="font-size: 20px; color: black">filter_list</span>
-        <select name="category" onchange="this.form.submit()" style="padding: 8px 10px;border: 1px solid var(--line);border-radius: 10px;background: #fff;" >
-          <option value="All" {{ 'selected' if selected=='All' else ''}}>All Categories</option>
+      <form method="get" action="{{ url_for('expenses') }}" style="display:flex; align-items: center; gap: 8px;">
+        <span class="material-icons" style="font-size:20px; color:#64748b">filter_list</span>
+        <select name="category" onchange="this.form.submit()" style="padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;">
+          <option value="All" {{ 'selected' if selected=='All' else '' }}>All Categories</option>
           {% for cat in categories %}
             <option value="{{ cat }}" {{ 'selected' if selected==cat else '' }}>{{ cat }}</option>
           {% endfor %}
         </select>
-       </form>
+      </form>
       <!-- Add Expense -->
-       <a class="btn btn-primary" href="#" title="Add Expense">
+      <a class="btn btn-primary" href="#" title="Add Expense">
         <span class="material-icons">add</span>
         <span>Add Expense</span>
-       </a>
+      </a>
     </div>
   </div>
+
   <!-- Expenses List -->
-   <div class="tlist" style="margin-top: 12px; display: grid; gap: 10px;">
+  <div class="tlist" style="margin-top:12px; display:grid; gap:10px;">
     {% for e in expenses %}
       <div class="titem">
-          <div class="ico"><span class="material-icons">shopping_bag</span></div>
-          <div style="flex:1">
-            <div class="name">{{ e.name }}</div>
-            <div class="sub">
-              {{ e.date }} &nbsp;|&nbsp; {{ e.method }}
-              {% if e.category %}
+        <div class="ico"><span class="material-icons">shopping_bag</span></div>
+        <div style="flex:1">
+          <div class="name">{{ e.name }}</div>
+          <div class="sub">
+            {{ e.date }} &nbsp;|&nbsp; {{ e.method }}
+            {% if e.category %}
               <span class="badge
-                  {% if e.category in ['Ăn uống', 'Food & Dining'] %}orange
-                  {% elif e.category in ['Di chuyển', 'Transportation'] %}blue
-                  {% elif e.category in ['Giải trí', 'Entertainment'] %}purple
-                  {% elif e.category in ['Mua sắm', 'Shopping'] %}green
-                  {% elif e.category in ['Hóa đơn', 'Bills'] %}red
-                  {% else %}gray{% endif %}">
+                {% if e.category in ['Ăn uống','Food & Dining'] %} orange
+                {% elif e.category in ['Di chuyển','Transportation'] %} blue
+                {% elif e.category in ['Giải trí','Entertainment'] %} purple
+                {% elif e.category in ['Mua sắm','Shopping'] %} green
+                {% elif e.category in ['Hóa đơn','Bills'] %} red
+                {% else %} yellow {% endif %}">
                 {{ e.category }}
               </span>
-              {% endif %}
-            </div>
+            {% endif %}
           </div>
+        </div>
 
-          <div class="amt neg">{{ CURRENCY }}{{ e.amount_str }}</div>
+        <div class="amt neg">{{ CURRENCY }}{{ e.amount_str }}</div>
 
-          <!-- actions -->
+        <!-- actions -->
         <div style="display:flex; gap:6px; margin-left:8px;">
           <button class="btn icon" title="Edit" onclick="alert('Demo: Edit expense')">
             <span class="material-icons">edit</span>
@@ -83,5 +85,4 @@
     {% endfor %}
   </div>
 </section>
-
 {% endblock %}

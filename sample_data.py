@@ -1,16 +1,18 @@
-# sample_data.py
-# DỮ LIỆU MẪU (VNĐ)
+# sample_data.py — dữ liệu mẫu đầy đủ cho mọi trang (VNĐ)
 
-# --- Dashboard: chuỗi ngày & giá trị chi/thu theo ngày ---
+# Ký hiệu tiền tệ
+CURRENCY = "₫"
+
+# ===== Dashboard =====
 days = list(range(1, 16))
+# dương = thu, âm = chi theo ngày
 day_values = [320_000, -140_000, -250_000, 500_000, -190_000, -120_000, 360_000,
               -180_000, 210_000, -150_000, 420_000, -160_000, 280_000, -130_000, 340_000]
 
-# --- Phân bổ theo danh mục (dùng số dương để vẽ pie/doughnut) ---
+# Phân bổ theo danh mục (số dương để vẽ pie/doughnut)
 cat_labels = ["Ăn uống", "Di chuyển", "Sách vở", "Giải trí", "Nhà ở"]
 cat_values = [4_500_000, 2_800_000, 2_000_000, 1_400_000, 6_000_000]
 
-# --- KPI tổng quan ---
 kpis = {
     "total_balance": 68_450_000,
     "monthly_spent": 12_540_000,
@@ -18,15 +20,16 @@ kpis = {
     "ai_score": 8.2,
 }
 
-# --- Giao dịch mẫu (thu/chi) ---
+# ===== Expenses =====
+# Quy ước: amount < 0 là CHI, amount > 0 là THU
 sample_expenses = [
-    {"name": "Cà phê Starbucks", "amount": -49_000, "date": "2025-08-01", "method": "Thẻ tín dụng", "category": "Ăn uống"},
-    {"name": "Vé xe buýt tháng",  "amount": -350_000, "date": "2025-08-02", "method": "Thẻ ghi nợ", "category": "Di chuyển"},
-    {"name": "Giáo trình Vật lý", "amount": -320_000, "date": "2025-08-03", "method": "Thẻ tín dụng", "category": "Sách vở"},
-    {"name": "Lương part‑time",   "amount": 3_800_000, "date": "2025-08-04", "method": "Chuyển khoản", "category": "Thu nhập"},
+    {"name": "Cà phê Starbucks", "amount": -49_000,  "date": "2025-08-01", "method": "Thẻ tín dụng", "category": "Ăn uống"},
+    {"name": "Vé xe buýt tháng", "amount": -350_000, "date": "2025-08-02", "method": "Thẻ ghi nợ",   "category": "Di chuyển"},
+    {"name": "Giáo trình Vật lý","amount": -320_000, "date": "2025-08-03", "method": "Thẻ tín dụng", "category": "Sách vở"},
+    {"name": "Lương part‑time",  "amount": 3_800_000,"date": "2025-08-04", "method": "Chuyển khoản", "category": "Thu nhập"},
 ]
 
-# --- Ngân sách theo danh mục ---
+# ===== Budget =====
 budget_categories = [
     {"name": "Ăn uống",   "spent": 4_500_000, "limit": 5_000_000, "color": "red"},
     {"name": "Di chuyển", "spent": 2_800_000, "limit": 3_000_000, "color": "red"},
@@ -35,14 +38,19 @@ budget_categories = [
     {"name": "Nhà ở",     "spent": 6_000_000, "limit": 8_000_000, "color": "green"},
 ]
 
-# --- Mục tiêu tiết kiệm ---
+# ===== Savings =====
 savings_goals = [
     {"name": "Quỹ khẩn cấp", "current": 8_470_000, "target": 20_000_000, "priority": "high",   "due": "2025-12-31"},
     {"name": "Laptop mới",   "current": 4_000_000, "target": 12_000_000, "priority": "medium", "due": "2025-08-15"},
     {"name": "Du lịch xuân", "current": 2_500_000, "target": 8_000_000,  "priority": "low",    "due": "2026-03-01"},
 ]
 
-# --- Analytics: chuỗi tháng và series ---
+# ===== Analytics =====
 months = ["Apr", "May", "Jun", "Jul", "Aug"]
 income_series   = [12_000_000, 13_500_000, 11_000_000, 15_000_000, 14_000_000]
-spending_series = [9_000_000,  10_000_000,  9_500_000, 12_000_000, 11_000_000]
+spending_series = [ 9_000_000, 10_000_000,  9_500_000, 12_000_000, 11_000_000]
+
+# ===== Helper format tiền VNĐ =====
+def fmt_vnd(v: float) -> str:
+    # Không dùng thập phân; dùng dấu . cho nhóm nghìn
+    return f"{round(v):,}".replace(",", ".")
