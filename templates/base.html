@@ -4,12 +4,21 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title or "StudentFinance" }}</title>
+
+  <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+  <!-- Main CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+  <!-- Charts (toàn cục) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
+  {% block head_extra %}{% endblock %}
 </head>
 <body>
   <header class="topnav">
@@ -21,11 +30,21 @@
       </div>
     </div>
     <nav class="nav">
-      <a class="{% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><span class="material-icons">dashboard</span>Dashboard</a>
-      <a class="{% if request.endpoint=='expenses' %}active{% endif %}" href="{{ url_for('expenses') }}"><span class="material-icons">receipt_long</span>Expenses</a>
-      <a class="{% if request.endpoint=='budget' %}active{% endif %}" href="{{ url_for('budget') }}"><span class="material-icons">account_balance_wallet</span>Budget</a>
-      <a class="{% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}"><span class="material-icons">analytics</span>Analytics</a>
-      <a class="{% if request.endpoint=='savings' %}active{% endif %}" href="{{ url_for('savings') }}"><span class="material-icons">savings</span>Savings</a>
+      <a class="{% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+        <span class="material-icons">dashboard</span>Dashboard
+      </a>
+      <a class="{% if request.endpoint=='expenses' %}active{% endif %}" href="{{ url_for('expenses') }}">
+        <span class="material-icons">receipt_long</span>Expenses
+      </a>
+      <a class="{% if request.endpoint=='budget' %}active{% endif %}" href="{{ url_for('budget') }}">
+        <span class="material-icons">account_balance_wallet</span>Budget
+      </a>
+      <a class="{% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
+        <span class="material-icons">analytics</span>Analytics
+      </a>
+      <a class="{% if request.endpoint=='savings' %}active{% endif %}" href="{{ url_for('savings') }}">
+        <span class="material-icons">savings</span>Savings
+      </a>
     </nav>
   </header>
 
@@ -33,13 +52,16 @@
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="flash">
-          {% for category,msg in messages %}
+          {% for category, msg in messages %}
             <div class="flash-item {{ category }}">{{ msg }}</div>
           {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
+
     {% block content %}{% endblock %}
   </main>
+
+  {% block scripts %}{% endblock %}
 </body>
 </html>

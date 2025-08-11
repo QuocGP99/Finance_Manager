@@ -11,31 +11,83 @@
     <canvas id="lineChart"></canvas>
   </div>
   <div class="panel">
-    <div class="panel-head"><h3>Category Breakdown</h3></div>
+    <div class="panel-head"><h3>Category Breakdown (This Month)</h3></div>
     <canvas id="pieChart"></canvas>
   </div>
 </section>
 
+<!-- Chart.js (đã có trong base.html). Nếu bạn CHƯA thêm plugin ở base.html thì nạp plugin ở đây: -->
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+
 <script>
-  const months = {{ months|tojson }};
-  const income = {{ income_series|tojson }};
-  const spending = {{ spending_series|tojson }};
-  const catLabels = {{ cat_labels|tojson }};
-  const catValues = {{ cat_values|tojson }};
+(function () {
+  // Dữ liệu từ server (đặt tên khác để tránh trùng biến)
+  const monthsData     = {{ months|tojson|safe }};
+  const incomeSeries   = {{ income_series|tojson|safe }};
+  const spendingSeries = {{ spending_series|tojson|safe }};
+  const categoryLabels = {{ cat_labels|tojson|safe }};
+  const categoryValues = {{ cat_values|tojson|safe }};
 
-  new Chart(document.getElementById('lineChart'), {
-    type:'line',
-    data:{ labels: months, datasets:[
-      { label:'Income', data: income, tension:.35 },
-      { label:'Spending', data: spending, tension:.35 }
-    ]},
-    options:{ plugins:{ legend:{ position:'bottom' } }, scales:{ y:{ beginAtZero:true } } }
-  });
+  // Đăng ký plugin datalabels (sau khi script plugin đã được nạp)
+  if (window.ChartDataLabels) {
+    Chart.register(ChartDataLabels);
+  }
 
-  new Chart(document.getElementById('pieChart'), {
-    type:'doughnut',
-    data:{ labels: catLabels, datasets:[{ data: catValues }] },
-    options:{ plugins:{ legend:{ position:'bottom' } } }
-  });
+  // Line chart: Income vs Spending
+  const lineEl = document.getElementById('lineChart');
+  if (lineEl) {
+    new Chart(lineEl, {
+      type: 'line',
+      data: {
+        labels: monthsData,
+        datasets: [
+          { label: 'Income',   data: incomeSeries,   tension: 0.35 },
+          { label: 'Spending', data: spendingSeries, tension: 0.35 }
+        ]
+      },
+      options: {
+        plugins: { legend: { position: 'bottom' } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // Pie/Doughnut chart: hiển thị % trên lát
+  const pieEl = document.getElementById('pieChart');
+  if (pieEl) {
+    new Chart(pieEl, {
+      type: 'doughnut',
+      data: { labels: categoryLabels, datasets: [{ data: categoryValues }] },
+      options: {
+        plugins: {
+          legend: { position: 'right' },
+          datalabels: window.ChartDataLabels ? {
+            formatter: (value, ctx) => {
+              const data = ctx.chart.data.datasets[0].data;
+              const total = data.reduce((a, b) => a + b, 0);
+              const pct = total ? (value / total) * 100 : 0;
+              return pct.toFixed(1) + '%';
+            },
+            color: '#fff',
+            font: { weight: '700' },
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            borderRadius: 4,
+            padding: 4
+          } : undefined,
+          tooltip: {
+            callbacks: {
+              label: (ctx) => {
+                const val = ctx.parsed;
+                const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                const pct = sum ? (val / sum * 100) : 0;
+                return `${ctx.label}: ₹${val.toLocaleString()} (${pct.toFixed(1)}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+})();
 </script>
 {% endblock %}
