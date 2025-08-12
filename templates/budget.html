@@ -1,52 +1,58 @@
 {% extends "base.html" %}
-{% block content %}
+{% block title %}Budget{% endblock %}
 
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/budget.css') }}">
+{% endblock %}
+
+{% block content %}
 <section class="hero">
   <h1>Budget Manager</h1>
   <p class="muted">Create and manage your monthly budgets with AI assistance</p>
 </section>
 
-{# ==== Tính tổng có fallback nếu app.py không truyền sẵn ==== #}
+{# Fallback nếu app.py không truyền sẵn #}
 {% set total_limit = month_limit|default(cats|sum(attribute='limit')|default(0)) %}
 {% set total_spent = month_spent|default(cats|sum(attribute='spent')|default(0)) %}
 {% set remaining   = month_left|default(total_limit - total_spent) %}
 {% set pct_used    = month_pct|default((total_spent / total_limit * 100) if total_limit else 0) %}
 
 <!-- KPI Cards -->
-<section class="cards">
-  <div class="kcard k-blue">
-    <div class="k-top"><div>Total Monthly Budget</div><span class="material-icons">account_balance_wallet</span></div>
-    <div class="k-value">{{ CURRENCY }}{{ fmt(total_limit) }}</div>
+<section class="bd-kpis">
+  <div class="bd-kpi k-blue">
+    <div class="bd-kpi-label">Total Monthly Budget</div>
+    <div class="bd-kpi-value" id="kpiTotalLimit">{{ CURRENCY }}{{ fmt(total_limit) }}</div>
+    <div class="bd-kpi-sub">
+      <span class="material-icons" style="vertical-align:middle;font-size:18px">account_balance_wallet</span>
+    </div>
   </div>
-  <div class="kcard" style="background:#ef4444">
-    <div class="k-top"><div>Total Spent</div><span class="material-icons">payments</span></div>
-    <div class="k-value">{{ CURRENCY }}{{ fmt(total_spent) }}</div>
-    <div class="k-sub">{{ '%.1f'|format(pct_used) }}% of budget used</div>
+
+  <div class="bd-kpi k-red">
+    <div class="bd-kpi-label">Total Spent</div>
+    <div class="bd-kpi-value" id="kpiTotalSpent">{{ CURRENCY }}{{ fmt(total_spent) }}</div>
+    <div class="bd-kpi-sub"><span id="kpiPctUsed">{{ '%.1f'|format(pct_used) }}</span>% of budget used</div>
   </div>
-  <div class="kcard k-green">
-    <div class="k-top"><div>Remaining</div><span class="material-icons">savings</span></div>
-    <div class="k-value">{{ CURRENCY }}{{ fmt(remaining if remaining>0 else 0) }}</div>
+
+  <div class="bd-kpi k-green">
+    <div class="bd-kpi-label">Remaining</div>
+    <div class="bd-kpi-value" id="kpiRemaining">{{ CURRENCY }}{{ fmt(remaining if remaining>0 else 0) }}</div>
+    <div class="bd-kpi-sub">
+      <span class="material-icons" style="vertical-align:middle;font-size:18px">savings</span>
+    </div>
   </div>
 </section>
 
-<!-- Actions row -->
-<div class="row" style="gap:12px; margin:8px 0 10px;">
-  <div></div>
-  <div style="margin-left:auto; display:flex; gap:10px;">
-    <a class="btn btn-outline"><span class="material-icons">psychology</span>Apply AI Suggestions</a>
-    <a class="btn btn-primary"><span class="material-icons">add</span>Add Budget</a>
-  </div>
+<!-- Actions -->
+<div class="bd-actions">
+  <button class="btn btn-outline"><span class="material-icons">psychology</span>Apply AI Suggestions</button>
+  <button class="btn btn-primary" id="addBudgetBtn"><span class="material-icons">add</span>Add Budget</button>
 </div>
 
-<!-- AI Budget Recommendations -->
-<section class="panel" style="background:#faf7ff;border-color:#ece7ff;">
+<!-- AI Recommendations (giữ nguyên) -->
+<section class="panel ai-reco">
   <div class="panel-head">
-    <h3>
-      <span class="material-icons" style="vertical-align:middle;color:#7c3aed;margin-right:6px">psychology</span>
-      AI Budget Recommendations
-    </h3>
+    <h3><span class="material-icons" style="vertical-align:middle;color:#7c3aed;margin-right:6px">psychology</span>AI Budget Recommendations</h3>
   </div>
-
   <div class="tlist" style="display:grid; gap:10px;">
     <div class="titem" style="border-color:#efe6ff;background:#fff;">
       <div class="ico"><span class="material-icons">trending_down</span></div>
@@ -55,7 +61,6 @@
         <div class="sub">Reduce by ~{{ CURRENCY }}{{ fmt(200000) }}/month with meal planning</div>
       </div>
     </div>
-
     <div class="titem" style="border-color:#ffe8d5;background:#fff;">
       <div class="ico"><span class="material-icons">warning_amber</span></div>
       <div style="flex:1">
@@ -70,54 +75,86 @@
 <section class="panel" style="margin-top:16px">
   <h3 style="margin:0 0 10px">Budget Categories</h3>
 
-  <div class="tlist" style="display:grid; gap:14px;">
+  <div id="budgetList" class="tlist" style="display:grid; gap:14px;">
     {% for c in cats %}
       {% set spent = c.spent|default(0) %}
       {% set limit = c.limit|default(0) %}
       {% set left  = c.left|default(limit - spent) %}
       {% set pct   = c.pct|default((spent/limit*100) if limit else 0) %}
       {% set warn  = pct >= 80 %}
-
-      <div class="panel" style="padding:14px">
-        <!-- Header -->
+      <article class="panel budget-item"
+               data-name="{{ c.name|default('Unnamed') }}"
+               data-spent="{{ spent }}"
+               data-limit="{{ limit }}">
         <div class="row">
-          <div style="display:flex; align-items:center; gap:10px; font-weight:800">
+          <div class="bi-title">
             {{ c.name|default('Unnamed') }}
-            {% if warn %}
-              <span class="chip medium">Warning</span>
-            {% else %}
-              <span class="chip low">On Track</span>
-            {% endif %}
+            {% if warn %}<span class="chip medium">Warning</span>{% else %}<span class="chip low">On Track</span>{% endif %}
           </div>
-
-          <div style="display:flex; align-items:center; gap:10px; color:#111827; font-weight:700">
-            {{ CURRENCY }}{{ fmt(spent) }} / {{ CURRENCY }}{{ fmt(limit) }}
-            <span class="material-icons" title="Edit" style="cursor:pointer">edit</span>
-            <span class="material-icons" title="Delete" style="cursor:pointer">delete</span>
+          <div class="bi-tools">
+            <span class="bi-amount">{{ CURRENCY }}{{ fmt(spent) }} / {{ CURRENCY }}{{ fmt(limit) }}</span>
+            <button class="icon-btn" data-edit title="Edit"><span class="material-icons">edit</span></button>
+            <button class="icon-btn" data-delete title="Delete"><span class="material-icons">delete</span></button>
           </div>
         </div>
 
-        <!-- Progress -->
         <div class="bar {% if warn %}yellow{% else %}green{% endif %}" style="margin-top:10px">
           <span style="width: {{ '%.1f'|format(pct) }}%"></span>
         </div>
 
-        <!-- % used + remaining -->
         <div class="row" style="margin-top:6px">
-          <div class="muted">{{ '%.1f'|format(pct) }}% used</div>
-          <div style="color:#059669">{{ CURRENCY }}{{ fmt(left if left>0 else 0) }} remaining</div>
+          <div class="muted"><span class="bi-pct">{{ '%.1f'|format(pct) }}</span>% used</div>
+          <div class="bi-remaining">{{ CURRENCY }}{{ fmt(left if left>0 else 0) }} remaining</div>
         </div>
 
-        <!-- AI Suggest + Apply -->
-        <div class="row" style="margin-top:8px; background:#faf5ff; border:1px solid #efe6ff; padding:10px 12px; border-radius:10px">
+        <div class="row bi-apply">
           <div class="muted">AI suggests: {{ CURRENCY }}{{ fmt(limit * 0.96) }}</div>
-          <a class="btn btn-outline" style="padding:6px 12px">
-            <span class="material-icons" style="font-size:18px">check_circle</span>Apply
-          </a>
+          <button class="btn btn-outline" style="padding:6px 12px"><span class="material-icons" style="font-size:18px">check_circle</span>Apply</button>
         </div>
-      </div>
+      </article>
     {% endfor %}
   </div>
 </section>
 
+<!-- Modal: Add/Edit Budget -->
+<div class="modal-backdrop" id="budgetModal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Add New Budget Category</h3>
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    <form id="budgetForm" class="modal-body">
+      <label>
+        <span>Category *</span>
+        <select name="category" required>
+          <option value="" disabled selected>Select a category</option>
+          {% for c in cats %}<option value="{{ c.name }}">{{ c.name }}</option>{% endfor %}
+          <option value="__custom__">+ Custom…</option>
+        </select>
+      </label>
+
+      <label class="hide" id="customWrap">
+        <span>Custom Category *</span>
+        <input name="custom" type="text" placeholder="e.g., Healthcare">
+      </label>
+
+      <label>
+        <span>Monthly Budget Amount *</span>
+        <input name="amount" type="number" step="0.01" required>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">Add Budget</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.CURRENCY = {{ CURRENCY|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/budget.js') }}"></script>
 {% endblock %}

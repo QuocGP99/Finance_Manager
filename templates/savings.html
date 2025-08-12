@@ -1,26 +1,197 @@
 {% extends "base.html" %}
+
+{% block title %}Savings{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/savings.css') }}">
+{% endblock %}
+
 {% block content %}
-<section class="hero">
-  <h1>Savings Goals</h1>
-  <p class="muted">Track progress towards your goals</p>
+<section class="sv-header">
+  <h1 class="sv-title">Savings Goals</h1>
+  <p class="sv-sub">Track your progress towards financial milestones</p>
+  <button class="btn btn-primary sv-new" id="newGoalBtn">
+    <span class="material-icons">add</span>New Goal
+  </button>
 </section>
 
-<div class="panel">
-  <div class="panel-head"><h3>Total Savings Progress</h3></div>
-  <div class="row"><strong>{{ CURRENCY }}{{ total_current }} / {{ CURRENCY }}{{ total_target }}</strong><strong>{{ total_pct }}%</strong></div>
-  <div class="bar big"><span style="width: {{ total_pct }}%"></span></div>
-  <div class="muted">{{ total_pct }}% of total goals achieved</div>
+<!-- KPI cards -->
+<section class="sv-kpis">
+  <div class="sv-kpi k-green">
+    <div class="sv-kpi-label">Total Saved</div>
+    <div class="sv-kpi-value">{{ CURRENCY }}{{ total_current }}</div>
+    <div class="sv-kpi-sub">{{ total_pct }}% of total goals</div>
+  </div>
+  <div class="sv-kpi k-blue">
+    <div class="sv-kpi-label">Total Target</div>
+    <div class="sv-kpi-value">{{ CURRENCY }}{{ total_target }}</div>
+    <div class="sv-kpi-sub">{{ goals|length }} active goals</div>
+  </div>
+  <div class="sv-kpi k-purple">
+    <div class="sv-kpi-label">Monthly Commitment</div>
+    <div class="sv-kpi-value" id="kpiMonthly">{{ CURRENCY }}0</div>
+    <div class="sv-kpi-sub">Total monthly contributions</div>
+  </div>
+</section>
+
+<!-- Modal: Create New Savings Goal -->
+<div class="modal-backdrop" id="goalModal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Create New Savings Goal</h3>
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+    </div>
+
+    <form id="goalForm" class="modal-body">
+      <div class="grid-2">
+        <label>
+          <span>Goal Title *</span>
+          <input name="title" type="text" placeholder="e.g., Emergency Fund" required>
+        </label>
+        <label>
+          <span>Current Amount</span>
+          <input name="current" type="number" step="0.01" value="0">
+        </label>
+      </div>
+
+      <label>
+        <span>Description</span>
+        <input name="desc" type="text" placeholder="e.g., 3 months of expenses">
+      </label>
+
+      <div class="grid-2">
+        <label>
+          <span>Target Amount *</span>
+          <input name="target" type="number" step="0.01" required>
+        </label>
+        <label>
+          <span>Priority</span>
+          <select name="priority">
+            <option value="medium" selected>Medium</option>
+            <option value="high">High</option>
+            <option value="low">Low</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="grid-2">
+        <label>
+          <span>Category</span>
+          <select name="category">
+            <option>General</option>
+            <option>Emergency</option>
+            <option>Education</option>
+            <option>Travel</option>
+            <option>Gadget</option>
+          </select>
+        </label>
+        <label>
+          <span>Monthly Contribution</span>
+          <input name="monthly" type="number" step="0.01" value="0">
+        </label>
+      </div>
+
+      <label>
+        <span>Target Date</span>
+        <input name="due" type="date" value="">
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Goal</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<section class="grid two" style="margin-top:14px">
-  {% for g in goals %}
-  <div class="panel">
-    <div class="row"><span>{{ g.name }}</span><strong>{{ CURRENCY }}{{ "{:,.2f}".format(g.current) }} / {{ CURRENCY }}{{ "{:,.2f}".format(g.target) }}</strong></div>
-    <div class="bar"><span style="width: {{ g.pct }}%"></span></div>
-    <div class="muted">Due: {{ g.due }} — 
-      <span class="chip {% if g.priority=='high' %}high{% elif g.priority=='medium' %}medium{% else %}low{% endif %}">{{ g.priority }} priority</span>
+<!-- Modal: Edit Goal -->
+<div class="modal-backdrop" id="editModal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="editTitle">Edit Goal</h3>
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
     </div>
+
+    <form id="editForm" class="modal-body">
+      <label>
+        <span>Current Amount</span>
+        <input name="current" type="number" step="0.01" value="0">
+      </label>
+      <label>
+        <span>Monthly Contribution</span>
+        <input name="monthly" type="number" step="0.01" value="0">
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Update Goal</button>
+      </div>
+    </form>
   </div>
+</div>
+
+
+<!-- Goals grid -->
+<section class="sv-grid">
+  {% for g in goals %}
+  <article
+    class="sv-card"
+    data-name="{{ g.name }}"
+    data-current="{{ g.current }}"
+    data-target="{{ g.target }}"
+    data-due="{{ g.due }}"
+    data-priority="{{ g.priority }}"
+  >
+    <header class="sv-card-hd">
+      <div class="sv-card-title">
+        <span class="material-icons sv-ic">{{ 'savings' }}</span>
+        <div class="sv-card-txt">
+          <strong>{{ g.name }}</strong>
+          <small class="muted">{{ 'Saving for ' ~ g.name|lower }}</small>
+        </div>
+      </div>
+      <div class="sv-tools">
+        <span class="sv-badge {{ g.priority }}">{{ g.priority }}</span>
+        <button class="sv-icon" title="Edit" data-edit><span class="material-icons">edit</span></button>
+        <button class="sv-icon" title="Duplicate"><span class="material-icons">content_copy</span></button>
+        <button class="sv-icon" title="More"><span class="material-icons">more_vert</span></button>
+      </div>
+    </header>
+
+    <div class="sv-amt">
+      <div class="sv-amt-left">{{ CURRENCY }}<span class="js-current">{{ "{:,.2f}".format(g.current) }}</span></div>
+      <div class="sv-amt-right">/ {{ CURRENCY }}{{ "{:,.2f}".format(g.target) }}</div>
+    </div>
+
+    <div class="sv-bar"><span style="width: {{ g.pct }}%"></span></div>
+    <div class="sv-row">
+      <div class="muted"><span class="js-pct">{{ g.pct }}</span>% complete</div>
+      <div class="sv-due js-due">Due: {{ g.due }}</div>
+    </div>
+
+    <div class="sv-quick">
+      <button class="sv-chip" data-add="25">+25</button>
+      <button class="sv-chip" data-add="50">+50</button>
+      <button class="sv-chip" data-add="100">+100</button>
+    </div>
+
+    <div class="sv-hint">
+      <div class="sv-hint-title">
+        <span class="material-icons">trending_up</span> Monthly contribution:
+        <strong>{{ CURRENCY }}<span class="js-monthly">0</span></strong>
+      </div>
+      <div class="sv-hint-sub muted">
+        At this rate, you'll reach your goal in <span class="js-months">–</span> months
+      </div>
+    </div>
+  </article>
   {% endfor %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.CURRENCY = {{ CURRENCY|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/savings.js') }}"></script>
 {% endblock %}

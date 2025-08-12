@@ -1,0 +1,72 @@
+:root{
+  --card:#fff; --muted:#64748b; --text:#0f172a; --border:#e5e7eb;
+  --green:#10b981; --blue:#3b82f6; --purple:#7c3aed; --warn:#f59e0b; --red:#ef4444;
+  --shadow:0 10px 24px rgba(15,23,42,.06); --radius:16px;
+}
+
+.sv-header{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:6px 0 14px}
+.sv-title{font-size:28px;margin:0;color:var(--text);font-weight:800}
+.sv-sub{margin:6px 0 0;color:var(--muted)}
+.sv-new{height:40px}
+
+.sv-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+.sv-kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+.sv-kpi .sv-kpi-label{color:#e5e9f3;font-weight:600}
+.sv-kpi .sv-kpi-value{font-size:22px;font-weight:800;color:#fff;margin-top:6px}
+.sv-kpi .sv-kpi-sub{color:#eef2ff;margin-top:4px}
+.k-green{background:linear-gradient(135deg,#34d399,#10b981)}
+.k-blue{background:linear-gradient(135deg,#60a5fa,#3b82f6)}
+.k-purple{background:linear-gradient(135deg,#a78bfa,#7c3aed)}
+
+.sv-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sv-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;box-shadow:var(--shadow)}
+.sv-card-hd{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sv-card-title{display:flex;gap:10px;align-items:center}
+.sv-ic{color:#64748b}
+.sv-card-txt small{display:block;color:var(--muted)}
+.sv-tools{display:flex;gap:6px;align-items:center}
+.sv-badge{padding:4px 8px;border-radius:999px;font-size:12px;background:#eef2ff;color:#334155;text-transform:capitalize}
+.sv-badge.high{background:#fee2e2;color:#991b1b}
+.sv-badge.medium{background:#fef3c7;color:#9a3412}
+.sv-badge.low{background:#dcfce7;color:#065f46}
+.sv-icon{background:#fff;border:1px solid var(--border);border-radius:10px;padding:6px;cursor:pointer}
+
+.sv-amt{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-weight:800}
+.sv-amt-left{font-size:22px;color:#111827}
+.sv-amt-right{color:var(--muted)}
+
+.sv-bar{height:8px;background:#eef2ff;border-radius:999px;overflow:hidden;margin:8px 0}
+.sv-bar>span{display:block;height:100%;background:#111827}
+
+.sv-row{display:flex;justify-content:space-between;color:var(--muted);font-size:14px}
+.sv-due.overdue{color:#b91c1c;font-weight:700}
+
+.sv-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0}
+.sv-chip{border:1px solid var(--border);background:#fff;border-radius:10px;padding:8px 0;font-weight:700;cursor:pointer}
+.sv-chip:hover{background:#f8fafc}
+
+.sv-hint{border:1px solid #dbeafe;background:#eff6ff;border-radius:12px;padding:10px}
+.sv-hint-title{display:flex;align-items:center;gap:6px;font-weight:700;color:#1e40af}
+.sv-hint-sub{margin-top:4px}
+
+@media (max-width: 1024px){
+  .sv-grid{grid-template-columns:1fr}
+}
+@media (max-width: 600px){
+  .sv-kpis{grid-template-columns:1fr}
+  .sv-title{font-size:24px}
+}
+/* ==== Modal ==== */
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal-backdrop.show{display:flex}
+.modal{background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 24px 64px rgba(15,23,42,.25);width:min(680px,100%);max-height:92vh;overflow:auto}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+.modal-head h3{margin:0;font-size:18px;font-weight:800}
+.modal-close{background:transparent;border:none;font-size:22px;cursor:pointer;line-height:1}
+.modal-body{display:grid;gap:12px;padding:14px 16px}
+.modal-body .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-body label{display:grid;gap:6px}
+.modal-body input,.modal-body select{border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;font:inherit}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+.btn.btn-outline{background:#fff;border:1px solid #cbd5e1}
+@media (max-width:640px){ .modal-body .grid-2{grid-template-columns:1fr} }

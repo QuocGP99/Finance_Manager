@@ -11,56 +11,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-  <!-- Main CSS -->
+  <!-- Global CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
 
-  <!-- Charts (toàn cục) -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-
-  <!-- Helper vẽ doughnut có % dùng lại ở nhiều trang -->
-  <script>
-    window.renderDoughnutWithPercents = function (canvasEl, labels, values, legendPos = 'right') {
-      try {
-        if (window.ChartDataLabels) { Chart.register(ChartDataLabels); }
-        return new Chart(canvasEl, {
-          type: 'doughnut',
-          data: { labels: labels, datasets: [{ data: values }] },
-          options: {
-            plugins: {
-              legend: { position: legendPos },
-              datalabels: window.ChartDataLabels ? {
-                formatter: (value, ctx) => {
-                  const data = ctx.chart.data.datasets[0].data || [];
-                  const total = data.reduce((a, b) => a + b, 0);
-                  const pct = total ? (value / total) * 100 : 0;
-                  return pct.toFixed(1) + '%';
-                },
-                color: '#fff',
-                font: { weight: '700' },
-                backgroundColor: 'rgba(0,0,0,0.5)',
-                borderRadius: 4,
-                padding: 4
-              } : undefined,
-              tooltip: {
-                callbacks: {
-                  label: (ctx) => {
-                    const val = ctx.parsed;
-                    const sum = (ctx.dataset.data || []).reduce((a, b) => a + b, 0);
-                    const pct = sum ? (val / sum * 100) : 0;
-                    return `${ctx.label}: {{ CURRENCY }}${val.toLocaleString()} (${pct.toFixed(1)}%)`;
-                  }
-                }
-              }
-            }
-          }
-        });
-      } catch (e) {
-        console.error('renderDoughnutWithPercents error:', e);
-      }
-    };
-  </script>
-
+  <!-- Page-specific head (CSS bổ sung từng trang) -->
   {% block head_extra %}{% endblock %}
 </head>
 <body>
@@ -105,6 +60,11 @@
     {% block content %}{% endblock %}
   </main>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@3.0.0"></script>
+<script src="{{ url_for('static', filename='js/chart.js') }}"></script> <!-- file helpers dùng chung -->
+
+  <!-- Page-specific scripts -->
   {% block scripts %}{% endblock %}
 </body>
 </html>

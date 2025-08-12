@@ -144,7 +144,7 @@
           </div>
         </div>
         <div class="amt {{ 'pos' if t.is_income else 'neg' }}">
-          {{ '+' if t.is_income else '{{ CURRENCY }}' }}{{ t.amount_str if not t.is_income else '{{ CURRENCY }}' ~ t.amount_str }}
+          {{ '+' if t.is_income else '' }}{{ t.amount_str if not t.is_income else '' ~ t.amount_str }}
         </div>
       </div>
       {% endfor %}
@@ -167,7 +167,7 @@
     <div class="panel" style="background:#f8fbff;border-color:#e6eefc">
       <div class="row" style="font-weight:700">
         <span>Monthly Budget</span>
-        <span>₹{{ month_spent }} / {{ CURRENCY }}{{ month_limit }}</span>
+        <span>{{CURRENCY}}{{ month_spent }} / {{ CURRENCY }}{{ month_limit }}</span>
       </div>
       <div class="bar big"><span style="width: {{ month_pct }}%"></span></div>
       <div class="muted">{{ month_pct }}% used — {{ CURRENCY }}{{ month_left }} remaining</div>
@@ -181,7 +181,7 @@
         <div class="bar {% if c.color=='red' %}red{% elif c.color=='yellow' %}yellow{% elif c.color=='blue' %}blue{% else %}green{% endif %}">
           <span style="width: {{ c.pct }}%"></span>
         </div>
-        <div class="muted">{{ c.pct }}% used <span style="float:right">₹{{ "{:,.2f}".format(c.left) }} left</span></div>
+        <div class="muted">{{ c.pct }}% used <span style="float:right">{{CURRENCY}}{{ "{:,}".format(c.left) }} left</span></div>
       </div>
       {% endfor %}
     </div>
@@ -215,7 +215,7 @@
           <span class="material-icons" style="color:#64748b">savings</span>
           <strong>{{ g.name }}</strong>
         </div>
-        <strong>₹{{ "{:,.2f}".format(g.current) }} / {{CURRENCY}}{{ "{:,.2f}".format(g.target) }}</strong>
+        <strong>{{CURRENCY}}{{ "{:,.2f}".format(g.current) }} / {{CURRENCY}}{{ "{:,.2f}".format(g.target) }}</strong>
       </div>
       <div class="bar"><span style="width: {{ g.pct }}%"></span></div>
       <div class="muted">{{ g.pct }}% complete — Due: {{ g.due }}
@@ -233,26 +233,15 @@
   </div>
 </section>
 
-<!-- Charts init -->
+{% block scripts %}
 <script>
-  const days = {{ days|tojson }};
-  const dayValues = {{ day_values|tojson }};
-  const catLabels = {{ cat_labels|tojson }};
-  const catValues = {{ cat_values|tojson }};
-
-  if (document.getElementById('barChart')){
-    new Chart(document.getElementById('barChart'), {
-      type:'bar',
-      data:{ labels: ['Jan','Feb','Mar','Apr','May'], datasets:[{ data:[1200,1350,1100,1500,1250] }] },
-      options:{ plugins:{ legend:{ display:false } }, scales:{ y:{ beginAtZero:true, suggestedMax:1600 } } }
-    });
-  }
-  if (document.getElementById('pieChart')){
-    new Chart(document.getElementById('pieChart'), {
-      type:'pie',
-      data:{ labels: catLabels, datasets:[{ data: catValues }] },
-      options:{ plugins:{ legend:{ position:'right' } } }
-    });
-  }
+  const days       = {{ days|tojson }};
+  const dayValues  = {{ day_values|tojson }};
+  const catLabels  = {{ cat_labels|tojson }};
+  const catValues  = {{ cat_values|tojson }};
+  window.CURRENCY  = {{ CURRENCY|tojson }};
 </script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+
 {% endblock %}

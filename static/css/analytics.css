@@ -1,0 +1,154 @@
+:root{
+  --bg:#f6f8ff;
+  --card:#ffffff;
+  --text:#0f172a;
+  --muted:#6b7280;
+  --brand:#3b82f6;
+  --brand-2:#6366f1;
+  --accent:#10b981;
+  --warn:#f59e0b;
+  --danger:#ef4444;
+  --border:#e5e7eb;
+  --shadow:0 10px 24px rgba(15,23,42,.06);
+  --radius:16px;
+
+  --gap:16px;
+}
+
+/* ===== Header ===== */
+.page-header{
+  display:flex;gap:var(--gap);
+  align-items:end;justify-content:space-between;
+  margin:8px 0 20px;
+  flex-wrap:wrap;
+}
+.page-title{
+  font-size:clamp(20px, 2.2vw, 28px);
+  font-weight:700;margin:0;color:var(--text)
+}
+.page-subtitle{
+  margin:6px 0 0;color:var(--muted);
+  font-size:clamp(12px, 1.6vw, 14px)
+}
+
+/* Dropdown */
+.dropdown{position:relative}
+.period-btn{
+  display:flex;align-items:center;gap:6px;
+  background:var(--card);border:1px solid var(--border);
+  padding:10px 14px;border-radius:12px;box-shadow:var(--shadow);
+  cursor:pointer
+}
+.menu{
+  position:absolute;right:0;top:110%;
+  list-style:none;margin:0;padding:6px;background:var(--card);
+  border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);
+  min-width:200px;display:none;z-index:5
+}
+.menu li{padding:10px 12px;border-radius:10px;cursor:pointer}
+.menu li:hover{background:#f2f5ff}
+.menu li.active{background:#eef2ff;color:#3730a3}
+
+/* ===== KPI ===== */
+.kpi-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:var(--gap);margin-bottom:20px
+}
+.kpi-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 16px;box-shadow:var(--shadow);
+  min-width:0
+}
+.kpi-icon{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;margin-bottom:10px}
+.kpi-icon .material-icons{font-size:20px}
+.kpi-icon.rise{background:#eff6ff;color:#1d4ed8}
+.kpi-icon.target{background:#ecfeff;color:#0e7490}
+.kpi-icon.savings{background:#ecfdf5;color:#047857}
+.kpi-icon.calendar{background:#f5f3ff;color:#6d28d9}
+.kpi-label{color:var(--muted);font-size:12px}
+.kpi-value{font-size:clamp(18px,2.2vw,22px);font-weight:700;color:var(--text);margin:2px 0}
+.kpi-sub{color:var(--muted);font-size:12px}
+
+/* ===== Cards & grids ===== */
+.grid-2{
+  display:grid;grid-template-columns:2fr 1.4fr;
+  gap:var(--gap);margin-bottom:var(--gap)
+}
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);
+  min-width:0; /* tránh overflow khi co hẹp */
+}
+.card-title{font-weight:600;margin-bottom:10px}
+
+/* Canvas responsive: để Chart.js tự scale chiều rộng, khoá chiều cao hợp lý */
+.card canvas{
+  display:block;width:100% !important;
+  height:clamp(220px, 36vh, 380px) !important;
+}
+
+/* Pie + legend */
+.pie-wrap{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center
+}
+.legend{list-style:none;margin:0;padding:0;max-width:100%}
+.legend li{
+  display:flex;justify-content:space-between;gap:10px;
+  padding:6px 8px;border-radius:10px;align-items:center
+}
+.legend li .key{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:8px;flex:0 0 10px}
+.legend li .left{display:flex;align-items:center;gap:8px;color:var(--text);min-width:0}
+.legend li .right{color:var(--muted);white-space:nowrap}
+
+/* Health score */
+.score-wrap{display:grid;gap:12px}
+.score-number{font-size:clamp(28px,4.8vw,44px);font-weight:800;color:#1e40af}
+.score-number small{font-size:12px;color:var(--muted)}
+.score-meter{height:10px;background:#eef2ff;border-radius:999px;overflow:hidden}
+.score-meter .bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--brand-2))}
+.score-bullets{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.score-bullets li{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pill{padding:4px 10px;border-radius:999px;font-size:12px}
+.pill.ok{background:#ecfdf5;color:#065f46}
+.pill.good{background:#eff6ff;color:#1e40af}
+.pill.warn{background:#fff7ed;color:#9a3412}
+.score-tip{background:#eef2ff;color:#1e3a8a;font-size:12px;padding:10px;border-radius:12px}
+
+/* ===== Breakpoints ===== */
+
+/* <= 1200px: nới khoảng, giảm chiều cao chart lớn để tránh cuộn quá dài */
+@media (max-width: 1200px){
+  :root{ --gap:14px; }
+  .card canvas{ height:clamp(200px, 34vh, 340px) !important; }
+}
+
+/* <= 1024px: lưới 1 cột, pie legend chuyển dọc, dropdown bám trái */
+@media (max-width: 1024px){
+  .grid-2{ grid-template-columns:1fr; gap:14px; }
+  .pie-wrap{ grid-template-columns:1fr; }
+  .legend li{ justify-content:space-between; }
+  .dropdown{ width:100%; order:3; }
+  .period-btn{ width:100%; justify-content:space-between; }
+}
+
+/* <= 768px: KPI thành 2 cột, chữ nhỏ hơn, legend wrap nội dung dài */
+@media (max-width: 768px){
+  .kpi-grid{ grid-template-columns:1fr 1fr; }
+  .legend li{ gap:6px; }
+  .legend li .left{ min-width:50%; }
+  .score-bullets li{ flex-wrap:wrap; }
+}
+
+/* <= 560px: KPI 1 cột, canh lề header theo cột, legend xếp dọc rõ ràng */
+@media (max-width: 560px){
+  .kpi-grid{ grid-template-columns:1fr; }
+  .page-header{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .legend li{ flex-direction:column; align-items:flex-start; }
+  .legend li .right{ white-space:normal; }
+  .card canvas{ height:clamp(200px, 38vh, 320px) !important; }
+}
+
+/* Motion reduce */
+@media (prefers-reduced-motion: reduce) {
+  *{ animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+}

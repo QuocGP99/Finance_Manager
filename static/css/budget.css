@@ -1,0 +1,163 @@
+/* static/css/budget.css */
+
+/* ============ Modal shell (re‑use như Savings) ============ */
+.modal-backdrop{
+  position:fixed; inset:0; display:none;
+  align-items:center; justify-content:center;
+  background:rgba(15,23,42,.45); backdrop-filter:saturate(110%) blur(6px);
+  z-index:60;
+}
+.modal-backdrop.show{ display:flex; }
+
+.modal{
+  width:min(560px, 92vw);
+  background:#fff; border-radius:16px;
+  border:1px solid #e6e9f5; box-shadow:0 18px 50px rgba(2,6,23,.18);
+  overflow:hidden; animation:modalIn .18s ease-out;
+}
+@keyframes modalIn{
+  from{ transform:translateY(8px) scale(.98); opacity:0; }
+  to  { transform:translateY(0)   scale(1);    opacity:1; }
+}
+
+.modal-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 18px; border-bottom:1px solid #eef1f8; background:#f8fafc;
+}
+.modal-head h3{ margin:0; font-size:18px; font-weight:800; color:#0f172a; }
+.modal-close{
+  appearance:none; border:0; background:transparent; cursor:pointer;
+  width:32px; height:32px; border-radius:10px; font-size:20px; line-height:1; color:#475569;
+}
+.modal-close:hover{ background:#eef2ff; color:#1e40af; }
+
+.modal-body{ padding:16px 18px; display:grid; gap:14px; }
+.modal-actions{
+  display:flex; gap:10px; justify-content:flex-end; margin-top:6px;
+}
+
+/* ============ Form controls ============ */
+.modal-body label{ display:grid; gap:6px; font-weight:600; color:#0f172a; }
+.modal-body label > span{ font-size:13px; color:#64748b; }
+
+.modal-body input[type="text"],
+.modal-body input[type="number"],
+.modal-body select{
+  appearance:none; width:100%;
+  background:#fff; color:#0f172a;
+  border:1.5px solid #e6e9f5; border-radius:12px;
+  padding:10px 12px; font:inherit; outline:none;
+  box-shadow:0 1px 0 rgba(2,6,23,.02) inset;
+  transition:border-color .15s ease, box-shadow .15s ease, transform .02s ease;
+}
+.modal-body select{
+  background-image:linear-gradient(45deg,transparent 50%,#94a3b8 0),
+                   linear-gradient(135deg,#94a3b8 50%,transparent 0);
+  background-position:calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+  background-size:6px 6px, 6px 6px; background-repeat:no-repeat;
+}
+
+.modal-body input:focus,
+.modal-body select:focus{
+  border-color:#93c5fd;
+  box-shadow:0 0 0 4px rgba(59,130,246,.12);
+}
+
+/* grid 2 cột nhỏ gọn khi cần */
+.modal-body .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media (max-width:560px){ .modal-body .grid-2{ grid-template-columns:1fr; } }
+
+/* ============ Buttons (đồng bộ với theme) ============ */
+.btn{ display:inline-flex; align-items:center; gap:8px; padding:10px 14px;
+  border-radius:12px; border:1px solid #e6e9f5; font-weight:700; cursor:pointer;
+  background:#fff; color:#0f172a; box-shadow:0 6px 18px rgba(2,6,23,.06);
+}
+.btn:active{ transform:translateY(1px); }
+.btn-primary{ background:#111827; color:#fff; border-color:#0b1220; }
+.btn-primary:hover{ background:#0b1220; }
+.btn-outline{ background:#fff; }
+
+.btn[disabled]{ opacity:.5; pointer-events:none; }
+
+/* helper: spacing cho nút mở modal trên trang Budget (nếu cần) */
+.bgt-actions .btn{ padding:10px 14px; }
+
+.bd-kpis{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+  gap:20px;
+  max-width:1100px;           /* giúp khối gọn và được canh giữa */
+  margin:8px auto 18px;       /* auto -> canh giữa */
+}
+
+.bd-kpi{
+  border-radius:16px;
+  padding:18px;
+  color:#fff;
+  box-shadow: var(--shadow);
+  background:#2563EB;         /* mặc định xanh, sẽ override bằng k-* */
+}
+
+.bd-kpi .bd-kpi-label{font-weight:700; opacity:.95}
+.bd-kpi .bd-kpi-value{font-size:34px; font-weight:800; margin-top:6px}
+.bd-kpi .bd-kpi-sub{opacity:.95; margin-top:8px; font-weight:600}
+
+.k-blue  { background:#2563EB; }
+.k-red   { background:#EF4444; }
+.k-green { background:#22C55E; }
+
+/* Actions dưới KPI, canh giữa */
+.bd-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;  /* Align buttons to the right */
+  margin-top: 16px;  /* Space from the top */
+  margin-bottom: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+/* Make sure the buttons remain aligned and styled properly */
+.bd-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid #e6e9f5;
+  font-weight: 700;
+  cursor: pointer;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 6px 18px rgba(2,6,23,.06);
+}
+
+.bd-actions .btn-primary {
+  background: #111827;
+  color: #fff;
+  border-color: #0b1220;
+}
+
+.bd-actions .btn-primary:hover {
+  background: #0b1220;
+}
+
+.bd-actions .btn-outline {
+  background: #fff;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 720px) {
+  .bd-actions {
+    justify-content: flex-start; /* Keep buttons aligned left on small screens */
+  }
+}
+
+/* Responsive giống Savings */
+@media (max-width: 1100px){
+  .bd-kpis{ grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px){
+  .bd-kpis{ grid-template-columns: 1fr; }
+  .bd-actions{ justify-content:flex-start; }
+} 

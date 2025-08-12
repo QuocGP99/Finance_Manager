@@ -1,0 +1,8 @@
+/* Các tiện ích/căn chỉnh cơ bản, có thể mở rộng dần */
+:root { --container-max: 1200px; }
+.page { max-width: var(--container-max); margin: 0 auto; padding: 16px; }
+.topnav { position: sticky; top: 0; background: #fff; z-index: 20; border-bottom: 1px solid #e5e7eb; }
+.nav a { display:inline-flex; align-items:center; gap:6px; padding:10px 12px; border-radius:8px; color:#374151; text-decoration:none; }
+.nav a.active { background:#eef2ff; color:#1e40af; }
+.flash { margin: 12px 0; display:grid; gap:8px; }
+.flash-item { padding:10px 12px; border-radius:10px; }

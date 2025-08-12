@@ -1,93 +1,121 @@
 {% extends "base.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+{% endblock %}
+
 {% block content %}
-<section class="hero">
-  <h1>Analytics</h1>
-  <p class="muted">Insights across months and categories</p>
+<div class="page-header">
+  <h1 class="page-title">Financial Analytics</h1>
+  <p class="page-subtitle">Comprehensive insights into your spending patterns and financial health</p>
+  <div class="dropdown">
+    <button class="btn period-btn" id="periodToggle">
+      <span id="periodLabel">Last Month</span>
+      <span class="material-icons">expand_more</span>
+    </button>
+    <ul class="menu" id="periodMenu" aria-labelledby="periodToggle">
+      <li data-range="this_month">This Month</li>
+      <li data-range="last_month" class="active">Last Month</li>
+      <li data-range="last_3_months">Last 3 Months</li>
+      <li data-range="last_6_months">Last 6 Months</li>
+      <li data-range="ytd">Year to Date</li>
+    </ul>
+  </div>
+</div>
+
+<section class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-icon rise"><span class="material-icons">trending_up</span></div>
+    <div class="kpi-label">Spending Trend</div>
+    <div class="kpi-value" id="kpiSpendingTrend">+12.3%</div>
+    <div class="kpi-sub">vs last month</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon target"><span class="material-icons">trip_origin</span></div>
+    <div class="kpi-label">Budget Efficiency</div>
+    <div class="kpi-value" id="kpiBudgetEfficiency">69.7%</div>
+    <div class="kpi-sub">of budget used</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon savings"><span class="material-icons">attach_money</span></div>
+    <div class="kpi-label">Savings Rate</div>
+    <div class="kpi-value" id="kpiSavingsRate">15.6%</div>
+    <div class="kpi-sub">of income saved</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon calendar"><span class="material-icons">event</span></div>
+    <div class="kpi-label">Daily Average</div>
+    <div class="kpi-value" id="kpiDailyAvg">{{CURRENCY}}41.80</div>
+    <div class="kpi-sub">per day this month</div>
+  </div>
 </section>
 
-<section class="grid two">
-  <div class="panel">
-    <div class="panel-head"><h3>Income vs Spending</h3></div>
-    <canvas id="lineChart"></canvas>
+<section class="grid-2">
+  <div class="card">
+    <div class="card-title">Spending vs Budget Trend</div>
+    <canvas id="chartSpendingVsBudget"></canvas>
   </div>
-  <div class="panel">
-    <div class="panel-head"><h3>Category Breakdown (This Month)</h3></div>
-    <canvas id="pieChart"></canvas>
+  <div class="card">
+  <div class="card-title">Current Month Breakdown</div>
+  <div>
+    <div class="muted" style="margin-bottom:6px">Category Breakdown (This Month)</div>
+    <canvas id="pieChart" height="220"></canvas>
+  </div>
+</div>
+</div>
+</section>
+
+<section class="grid-2">
+  <div class="card">
+    <div class="card-title">Category Spending Trends</div>
+    <canvas id="chartCategoryTrends"></canvas>
+  </div>
+  <div class="card">
+    <div class="card-title">Savings Goal Tracking</div>
+    <canvas id="chartSavingsArea"></canvas>
   </div>
 </section>
 
-<!-- Chart.js (đã có trong base.html). Nếu bạn CHƯA thêm plugin ở base.html thì nạp plugin ở đây: -->
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<section class="grid-2">
+  <div class="card">
+    <div class="card-title">Weekly Spending Pattern (Current Month)</div>
+    <canvas id="chartWeeklyBars"></canvas>
+  </div>
+  <div class="card">
+    <div class="card-title">Financial Health Score</div>
+    <div class="score-wrap">
+      <div class="score-number"><span id="healthScore">8.2</span><small>/10</small></div>
+      <div class="score-meter"><div class="bar" style="width: 82%"></div></div>
+      <ul class="score-bullets">
+        <li><span>Budget Adherence</span><b class="pill ok">Excellent</b></li>
+        <li><span>Savings Rate</span><b class="pill good">Good</b></li>
+        <li><span>Spending Consistency</span><b class="pill warn">Average</b></li>
+      </ul>
+      <div class="score-tip">Great progress! Focus on reducing food expenses to reach a 9.0 score.</div>
+    </div>
+  </div>
+</section>
+{% endblock %}
 
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/chart.js') }}"></script>
 <script>
-(function () {
-  // Dữ liệu từ server (đặt tên khác để tránh trùng biến)
-  const monthsData     = {{ months|tojson|safe }};
-  const incomeSeries   = {{ income_series|tojson|safe }};
-  const spendingSeries = {{ spending_series|tojson|safe }};
-  const categoryLabels = {{ cat_labels|tojson|safe }};
-  const categoryValues = {{ cat_values|tojson|safe }};
-
-  // Đăng ký plugin datalabels (sau khi script plugin đã được nạp)
-  if (window.ChartDataLabels) {
-    Chart.register(ChartDataLabels);
+  window.months       = {{ months | tojson }};
+  window.income       = {{ income_series | tojson }};
+  window.spending     = {{ spending_series | tojson }};
+  window.catLabels    = {{ cat_labels | tojson }};
+  window.catValues    = {{ cat_values | tojson }};
+  window.CURRENCY     = {{ CURRENCY | tojson }};
+  // Debug: kiểm tra dữ liệu pie chart
+  console.log("catLabels", window.catLabels);
+  console.log("catValues", window.catValues);
+  // Debug: kiểm tra ChartHelpers
+  if (!window.ChartHelpers) {
+    console.error("ChartHelpers is not loaded!");
   }
-
-  // Line chart: Income vs Spending
-  const lineEl = document.getElementById('lineChart');
-  if (lineEl) {
-    new Chart(lineEl, {
-      type: 'line',
-      data: {
-        labels: monthsData,
-        datasets: [
-          { label: 'Income',   data: incomeSeries,   tension: 0.35 },
-          { label: 'Spending', data: spendingSeries, tension: 0.35 }
-        ]
-      },
-      options: {
-        plugins: { legend: { position: 'bottom' } },
-        scales: { y: { beginAtZero: true } }
-      }
-    });
-  }
-
-  // Pie/Doughnut chart: hiển thị % trên lát
-  const pieEl = document.getElementById('pieChart');
-  if (pieEl) {
-    new Chart(pieEl, {
-      type: 'doughnut',
-      data: { labels: categoryLabels, datasets: [{ data: categoryValues }] },
-      options: {
-        plugins: {
-          legend: { position: 'right' },
-          datalabels: window.ChartDataLabels ? {
-            formatter: (value, ctx) => {
-              const data = ctx.chart.data.datasets[0].data;
-              const total = data.reduce((a, b) => a + b, 0);
-              const pct = total ? (value / total) * 100 : 0;
-              return pct.toFixed(1) + '%';
-            },
-            color: '#fff',
-            font: { weight: '700' },
-            backgroundColor: 'rgba(0,0,0,0.5)',
-            borderRadius: 4,
-            padding: 4
-          } : undefined,
-          tooltip: {
-            callbacks: {
-              label: (ctx) => {
-                const val = ctx.parsed;
-                const sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                const pct = sum ? (val / sum * 100) : 0;
-                return `${ctx.label}: {{ CURRENCY }}${val.toLocaleString()} (${pct.toFixed(1)}%)`;
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-})();
 </script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
 {% endblock %}
