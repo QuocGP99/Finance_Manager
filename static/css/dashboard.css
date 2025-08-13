@@ -1,0 +1,157 @@
+/* Helpers */
+.muted{color:var(--muted)}
+.row{display:flex;align-items:center;justify-content:space-between;margin:6px 0}
+
+/* Section: hero */
+.hero h1{font-size:32px;margin:8px 0 4px}
+.hero p{color:var(--muted);margin:0 0 18px}
+
+/* KPI cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:18px}
+.kcard{
+  border-radius:16px;color:#fff;padding:18px;box-shadow:var(--shadow);min-height:120px
+}
+.k-top{display:flex;align-items:center;justify-content:space-between;opacity:.95;font-weight:600}
+.k-value{font-size:34px;font-weight:800;margin-top:6px}
+.k-sub{opacity:.95;margin-top:8px}
+.k-green{background:var(--green)}
+.k-blue{background:var(--blue)}
+.k-purple{background:var(--purple)}
+.k-orange{background:var(--orange)}
+
+/* Grid layouts */
+.grid.two{display:grid;grid-template-columns:2fr 1fr;gap:18px;margin-bottom:18px}
+.grid.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+
+/* -------- Panels -------- */
+.panel{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:16px;
+}
+.panel-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.panel h3{ margin:0; }
+
+/* -------- Buttons (dùng ở Dashboard) -------- */
+.btn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:10px; border:none; cursor:pointer;
+  font-weight:700; box-shadow:var(--shadow); text-decoration:none;
+}
+.btn-primary{ background:var(--blue); color:#fff; }
+.btn-outline{ background:#fff; border:2px solid var(--line); color:#111827; }
+.btn.icon{   background:#f1f5ff; }
+
+/* -------- Progress bars -------- */
+.bar{ height:8px; background:#eef2ff; border-radius:999px; overflow:hidden; }
+.bar span{ display:block; height:100%; background:#2563EB; }
+.bar.big{ height:10px; margin:6px 0; }
+.bar.red    span{ background:#ef4444; }
+.bar.yellow span{ background:#f59e0b; }
+.bar.blue   span{ background:#2563EB; }
+.bar.green  span{ background:#10B981; }
+.bar.purple span{ background:#8b5cf6; }
+
+/* -------- Category list (dưới biểu đồ) -------- */
+.cat-list{ display:grid; gap:10px; }
+.cat-row{
+  display:flex; align-items:center; gap:10px;
+  border:1px solid var(--line); background:#fff; border-radius:10px; padding:10px;
+}
+.cat-row .cat-name{ flex:1; }
+.cat-row .cat-amt{ font-weight:800; }
+.dot{ width:10px; height:10px; border-radius:999px; display:inline-block; }
+.dot.blue{   background:#3b82f6; }
+.dot.green{  background:#10b981; }
+.dot.yellow{ background:#f59e0b; }
+.dot.red{    background:#ef4444; }
+.dot.purple{ background:#8b5cf6; }
+
+/* -------- Insights (khối AI Financial Insights) -------- */
+.insight{
+  display:flex; gap:12px; border:1px solid var(--line);
+  border-radius:12px; padding:12px; background:#fff; margin-bottom:10px;
+}
+.insight .ic{
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  background:#f1f5ff; color:#4f46e5;
+}
+.insight .title{ font-weight:700; margin-bottom:4px; }
+.insight .desc{ margin:0 0 6px; color:var(--muted); }
+.insight.warn{ background:#fff7ed; border-color:#fde3c5; }
+.insight.ok{   background:#f0fdf4; border-color:#d3f5da; }
+.insight.mid{  background:#eef2ff; border-color:#dfe4ff; }
+
+/* -------- Tip boxes (Budget/Savings tip ở cột phải) -------- */
+.tipbox{
+  display:flex; align-items:flex-start; gap:8px;
+  padding:12px; border:1px solid var(--line);
+  border-radius:12px; background:#fff; color:var(--text);
+  box-shadow:var(--shadow);
+}
+.tipbox.purple{ background:#f6f3ff; border-color:#e9e2ff; }
+
+/* -------- Recent Transactions list (thẻ bên dưới) -------- */
+.panel.list .tlist{ display:grid; gap:10px; }
+.titem{
+  display:flex; align-items:center; gap:12px;
+  background:#fff; border:1px solid var(--line);
+  border-radius:12px; padding:10px;
+}
+.titem .ico{
+  width:36px; height:36px; border-radius:10px; background:#eef2ff;
+  display:flex; align-items:center; justify-content:center; color:#4f46e5;
+}
+.titem .name{ font-weight:700; }
+.titem .sub{ color:var(--muted); }
+.badge{
+  display:inline-block; padding:2px 8px; border-radius:999px;
+  font-size:12px; margin-right:6px; background:#fff3e8;
+}
+.badge.orange{ background:#fff3e8; color:#b45309; }
+.badge.green{  background:#ecfdf5; color:#065f46; }
+.badge.yellow{ background:#fff7ed; color:#92400e; }
+.badge.blue{   background:#e0e7ff; color:#4338ca; }
+.badge.purple{ background:#ede9fe; color:#6d28d9; }
+
+.amt{ margin-left:auto; font-weight:800; }
+.amt.neg{ color:#b91c1c; }
+.amt.pos{ color:#16a34a; }
+
+/* -------- Savings Goals mini-cards trong Dashboard -------- */
+.goal{ background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); }
+.goal .row{ margin:6px 0; }
+
+/* -------- Charts area -------- */
+canvas{ max-width:100%; }
+.charts.two canvas{ max-height:260px; }
+
+/* -------- Responsive (giống file gốc) -------- */
+@media (max-width:1100px){
+  .cards{ grid-template-columns:1fr 1fr; }
+  .grid.two{ grid-template-columns:1fr; }
+  .grid.three{ grid-template-columns:1fr 1fr; }
+}
+@media (max-width:720px){
+  .cards{ grid-template-columns:1fr; }
+  .grid.three{ grid-template-columns:1fr; }
+}
+/* Giữ 3 cột ổn định và co giãn */
+.grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid.three > * { min-width: 0; }
+
+/* Nhóm actions bên phải header */
+.dash-actions{ display:flex; gap:8px; align-items:center; flex-wrap:nowrap; }
+
+/* Nút sort nhỏ gọn */
+.icon-btn-compact{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:34px; height:34px; padding:0;
+  border:1px solid var(--line); border-radius:10px;
+  background:#f8fafc; color:#111827; cursor:pointer; box-shadow:var(--shadow);
+}
+.icon-btn-compact .material-icons{ font-size:20px; line-height:1; }
+.icon-btn-compact:active{ transform: translateY(1px); }

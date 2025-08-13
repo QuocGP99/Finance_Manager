@@ -54,3 +54,83 @@ spending_series = [ 9_000_000, 10_000_000,  9_500_000, 12_000_000, 11_000_000]
 def fmt_vnd(v: float) -> str:
     # Không dùng thập phân; dùng dấu . cho nhóm nghìn
     return f"{round(v):,}".replace(",", ".")
+
+# ===== Unified taxonomy =====
+# Nhóm danh mục cho Expenses (chi tiêu)
+EXPENSE_CATEGORIES = [
+    "Food & Dining", "Transportation", "Textbooks", "Entertainment",
+    "Housing", "Utilities", "Healthcare", "Shopping", "Others"
+]
+
+# Nhóm danh mục cho Savings (mục tiêu tiết kiệm)
+SAVINGS_CATEGORIES = [
+    "Emergency", "Technology", "Travel", "Education",
+    "Housing", "Transportation", "Personal"
+]
+
+# Nhóm danh mục cho Budget
+BUDGET_CATEGORIES = [
+    "Utilities", "Healthcare", "Shopping", "Personal Care",
+    "Subscriptions", "Other"
+]
+
+# Alias ↔ tên chuẩn (tiếng Việt/Anh…)
+ALIASES = {
+    # Expenses
+    "ăn uống": "Food & Dining", "food & dining": "Food & Dining", "food-dining": "Food & Dining",
+    "di chuyển": "Transportation", "transportation": "Transportation", "transport": "Transportation",
+    "sách vở": "Textbooks", "textbooks": "Textbooks",
+    "giải trí": "Entertainment", "entertainment": "Entertainment",
+    "nhà ở": "Housing", "housing": "Housing",
+    "hóa đơn": "Utilities", "utilities": "Utilities", "bills": "Utilities",
+    "y tế": "Healthcare", "healthcare": "Healthcare",
+    "mua sắm": "Shopping", "shopping": "Shopping",
+    "khác": "Others", "other": "Others", "others": "Others",
+    # Budget
+    "subscriptions": "Subscriptions", "subcriptions": "Subscriptions",  # sửa chính tả
+    "personal care": "Personal Care",
+    # Savings
+    "emergency": "Emergency", "technology": "Technology", "travel": "Travel",
+    "education": "Education", "personal": "Personal",
+}
+
+# 5 danh mục sẽ vẽ Pie chart (theo thứ tự cố định)
+PIECHART_ORDER = ["Food & Dining", "Transportation", "Textbooks", "Entertainment", "Housing"]
+
+
+def canon_cat(name: str, domain: str) -> str:
+    """
+    Chuẩn hoá tên danh mục theo domain: 'expense' | 'budget' | 'savings'.
+    Nếu không khớp, trả về fallback ('Others' / 'Other' / 'Personal').
+    """
+    if not name:
+        name = ""
+    key = str(name).strip().lower()
+    std = ALIASES.get(key)
+    if domain == "expense":
+        if std in EXPENSE_CATEGORIES:
+            return std
+        # nếu chưa map được, thử so khớp nguyên văn
+        if name in EXPENSE_CATEGORIES:
+            return name
+        return "Others"
+    elif domain == "budget":
+        if std in BUDGET_CATEGORIES:
+            return std
+        if name in BUDGET_CATEGORIES:
+            return name
+        return "Other"
+    elif domain == "savings":
+        if std in SAVINGS_CATEGORIES:
+            return std
+        if name in SAVINGS_CATEGORIES:
+            return name
+        # savings không bắt buộc category, rơi về 'Personal'
+        return "Personal"
+    return name
+
+
+def month_from_iso(d: str) -> str:
+    # helper nếu muốn lọc theo tháng (YYYY-MM)
+    return (d or "")[:7]
+

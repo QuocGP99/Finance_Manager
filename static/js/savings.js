@@ -1,179 +1,164 @@
 // static/js/savings.js
 (function () {
-  const cur = window.CURRENCY || '';
-  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const cur = window.CURRENCY || '₫';
+  const $  = (s, r=document)=>r.querySelector(s);
+  const $$ = (s, r=document)=>Array.from(r.querySelectorAll(s));
+  const N  = x => Number(x || 0);
+  const fmt = n => `${cur}${Number(n||0).toLocaleString('vi-VN',{maximumFractionDigits:2})}`;
 
-  // Format tiền
-  const fmt = (v) => `${cur}${Number(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // KPI refs
+  const elSavedVal   = document.querySelector('.sv-kpi.k-green .sv-kpi-value');
+  const elSavedSub   = document.querySelector('.sv-kpi.k-green .sv-kpi-sub');
+  const elTargetVal  = document.querySelector('.sv-kpi.k-blue  .sv-kpi-value');
+  const elTargetSub  = document.querySelector('.sv-kpi.k-blue  .sv-kpi-sub');
+  const elMonthlyVal = document.querySelector('.sv-kpi.k-purple .sv-kpi-value');
 
-  // Tính số tháng còn lại (>=1)
-  const monthsLeft = (dueStr) => {
-    const today = new Date();
-    const due = new Date(dueStr);
-    const y = due.getFullYear() - today.getFullYear();
-    const m = due.getMonth() - today.getMonth();
-    const d = due.getDate() - today.getDate();
-    let total = y * 12 + m + (d > 0 ? 1 : 0);
-    return Math.max(1, total);
+  // Grid + modals
+  const grid      = $('.sv-grid');
+  const newBtn    = $('#newGoalBtn');
+  const addModal  = $('#goalModal');
+  const addForm   = $('#goalForm');
+  const editModal = $('#editModal');
+  const editForm  = $('#editForm');
+
+  const openModal  = m => { m.classList.add('show'); m.setAttribute('aria-hidden','false'); };
+  const closeModal = m => { m.classList.remove('show'); m.setAttribute('aria-hidden','true'); };
+
+  const clampPct = (c,t)=> t>0 ? Math.min(100, Math.max(0, c/t*100)) : 0;
+  const monthsToGoal = (c,t,m)=>{
+    if (m<=0) return '–';
+    const remain = Math.max(t - c, 0);
+    const mo = Math.ceil(remain / m);
+    return (isFinite(mo) && mo>=0) ? String(mo) : '–';
   };
 
-  // Cập nhật 1 thẻ goal
-function updateCard(card) {
-  const currentEl = card.querySelector('.js-current');
-  const pctEl = card.querySelector('.js-pct');
-  const bar = card.querySelector('.sv-bar > span');
-  const monthlyEl = card.querySelector('.js-monthly');
-  const monthsEl = card.querySelector('.js-months');
-  const dueEl = card.querySelector('.js-due');
+  // ---- KPI ----
+  function recalcMonthly(){
+    let total = 0;
+    $$('.sv-card', grid).forEach(c => total += N(c.dataset.monthly));
+    if (elMonthlyVal) elMonthlyVal.textContent = fmt(total);
+  }
+  function recalcTotals(){
+    let cur = 0, tar = 0;
+    const cards = $$('.sv-card', grid);
+    cards.forEach(c => { cur += N(c.dataset.current); tar += N(c.dataset.target); });
+    if (elSavedVal)  elSavedVal.textContent  = fmt(cur);
+    if (elTargetVal) elTargetVal.textContent = fmt(tar);
+    const pct = tar>0 ? (cur/tar*100) : 0;
+    if (elSavedSub)  elSavedSub.textContent  = `${pct.toFixed(1)}% of total goals`;
+    if (elTargetSub) elTargetSub.textContent = `${cards.length} active goals`;
+  }
+  const recalcAll = ()=>{ recalcTotals(); recalcMonthly(); };
 
-  const target = Number(card.dataset.target || 0);
-  let current = Number(String(currentEl.textContent).replace(/[, ]/g, '') || card.dataset.current || 0);
+  // ---- Card UI ----
+  function setCardUI(card, {current, target, monthly, due, priority}){
+    if (current != null) card.dataset.current = current;
+    if (target  != null) card.dataset.target  = target;
+    if (monthly != null) card.dataset.monthly = monthly;
+    if (due     != null) card.dataset.due     = due;
+    if (priority)        card.dataset.priority= priority;
 
-  const pct = target > 0 ? Math.min(100, (current / target) * 100) : 0;
-  pctEl.textContent = (Math.round(pct * 10) / 10).toString();
-  bar.style.width = `${pct}%`;
+    const c = N(card.dataset.current), t = N(card.dataset.target), m = N(card.dataset.monthly||0);
+    const pct = clampPct(c,t);
 
-  const overdue = new Date(card.dataset.due) < new Date();
-  dueEl.classList.toggle('overdue', overdue);
+    const curEl = card.querySelector('.js-current');
+    const pctEl = card.querySelector('.js-pct');
+    const barEl = card.querySelector('.sv-bar span');
+    const dueEl = card.querySelector('.js-due');
+    const monEl = card.querySelector('.js-monthly');
+    const monTx = card.querySelector('.sv-hint-sub .js-months');
+    const badge = card.querySelector('.sv-badge');
 
-  const left = Math.max(target - current, 0);
-  const mLeft = monthsLeft(card.dataset.due);
+    if (curEl) curEl.textContent = c.toLocaleString('vi-VN',{maximumFractionDigits:2});
+    if (pctEl) pctEl.textContent = pct.toFixed(1);
+    if (barEl) barEl.style.width = pct+'%';
+    if (dueEl) dueEl.textContent = 'Due: ' + (card.dataset.due || '');
+    if (monEl) monEl.textContent = m.toLocaleString('vi-VN',{maximumFractionDigits:2});
+    if (monTx) monTx.textContent = monthsToGoal(c,t,m);
+    if (badge && priority){ badge.textContent = priority; badge.className = 'sv-badge ' + priority; }
+  }
 
-    // Nếu có override → dùng override; nếu không → công thức mặc định
-  const override = Number(card.dataset.monthlyOverride || 0);
-  let monthly = override > 0 ? override : (left / mLeft);
-
-  // Nếu override > 0 và monthly > left → clamp bằng left (đạt trong 1 tháng)
-  monthly = Math.min(monthly, left);
-
-  // months hiển thị: nếu override > 0 → ceil(left / override), else = mLeft
-  const monthsCalc = override > 0 && monthly > 0 ? Math.max(1, Math.ceil(left / override)) : Math.max(1, mLeft);
-
-  monthlyEl.textContent = Number(monthly).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  monthsEl.textContent = monthsCalc;
-  currentEl.textContent = Number(current).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  return { current, target, monthly };
-}
-
-// SỬA: KPI tổng tính theo override nếu có
-function recomputeMonthly() {
-  let sum = 0;
-  $$('.sv-card').forEach((card) => {
-    const cur = Number(String(card.querySelector('.js-current').textContent).replace(/[, ]/g, ''));
-    const target = Number(card.dataset.target || 0);
-    const left = Math.max(target - cur, 0);
-    const mLeft = monthsLeft(card.dataset.due);
-    const override = Number(card.dataset.monthlyOverride || 0);
-    const monthly = override > 0 ? Math.min(override, left) : (left / mLeft);
-    sum += monthly;
-  });
-  setMonthlyKPI(sum);
-}
-
-  // Khởi tạo tất cả card + tính KPI “Monthly Commitment”
-  function init() {
-    let totalMonthly = 0;
-    $$('.sv-card').forEach((card) => {
-      const r = updateCard(card);
-
-      // Quick add buttons
-      $$('.sv-chip', card).forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const add = Number(btn.dataset.add || 0);
-          const curEl = card.querySelector('.js-current');
-          const curNum = Number(String(curEl.textContent).replace(/[, ]/g, '')) + add;
-          curEl.textContent = curNum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          const res = updateCard(card);
-          recomputeMonthly(); // cập nhật KPI tổng
-        });
+  function bindCard(card){
+    // Quick add +25/+50/+100
+    card.querySelectorAll('.sv-chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const inc = N(btn.dataset.add);
+        setCardUI(card, { current: N(card.dataset.current) + inc });
+        recalcAll();
+        toast('Added ' + fmt(inc));
       });
-
-      totalMonthly += r.monthly;
     });
-    setMonthlyKPI(totalMonthly);
+
+    // Edit
+    card.querySelector('[data-edit]')?.addEventListener('click', ()=>{
+      editForm.current.value = card.dataset.current || 0;
+      editForm.monthly.value = card.dataset.monthly || 0;
+      openModal(editModal);
+
+      const handler = (e)=>{
+        e.preventDefault();
+        setCardUI(card, {
+          current: N(editForm.current.value),
+          monthly: N(editForm.monthly.value)
+        });
+        recalcAll();
+        closeModal(editModal);              // <-- tự đóng modal sau cập nhật
+        toast('Goal updated');
+        editForm.removeEventListener('submit', handler);
+      };
+      editForm.addEventListener('submit', handler, { once:true });
+    });
+
+    // Delete (ưu tiên nút data-delete; nếu không có, dùng nút cuối trong .sv-tools)
+    const delBtn = card.querySelector('[data-delete]') || card.querySelector('.sv-tools .sv-icon:last-of-type');
+    delBtn?.addEventListener('click', ()=>{
+      const title = card.dataset.name || card.querySelector('.sv-card-txt strong')?.textContent || 'this goal';
+      const c = N(card.dataset.current), t = N(card.dataset.target);
+      const ok = confirm(`Delete "${title}"?\nCurrent/Target: ${fmt(c)} / ${fmt(t)}`);
+      if (!ok) return;
+      card.remove();
+      recalcAll();
+      toast('Deleted successfully');
+    });
   }
 
-  function setMonthlyKPI(v) {
-    const el = document.getElementById('kpiMonthly');
-    if (el) el.textContent = fmt(v);
-  }
+  // ---- Build card (dùng khi tạo mới) ----
+  function buildCard(data){
+    const pct = clampPct(data.current, data.target);
+    const art = document.createElement('article');
+    art.className = 'sv-card';
+    art.dataset.name     = data.title;
+    art.dataset.current  = data.current;
+    art.dataset.target   = data.target;
+    art.dataset.due      = data.due || '';
+    art.dataset.priority = data.priority || 'medium';
+    art.dataset.monthly  = data.monthly || 0;
 
-
-  init();
-})();
-// === Modal create goal ===
-(function setupCreateGoal() {
-  const $ = (s, r=document) => r.querySelector(s);
-  const modal = $('#goalModal');
-  const openBtn = $('#newGoalBtn');
-  const closeBtns = [$('.modal-close', modal), $('[data-close]', modal)];
-  const form = $('#goalForm');
-
-  // set default date = +6 months
-  const dueInput = form.querySelector('input[name="due"]');
-  if (dueInput && !dueInput.value) {
-    const d = new Date(); d.setMonth(d.getMonth()+6);
-    dueInput.value = d.toISOString().slice(0,10);
-  }
-
-  function open() { modal.classList.add('show'); modal.setAttribute('aria-hidden','false'); }
-  function close(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden','true'); }
-  openBtn?.addEventListener('click', open);
-  closeBtns.forEach(b=>b?.addEventListener('click', close));
-  modal.addEventListener('click', (e)=>{ if(e.target===modal) close(); });
-
-  form.addEventListener('submit', (e)=>{
-    e.preventDefault();
-    const fd = new FormData(form);
-    const data = {
-      name: (fd.get('title') || '').toString().trim(),
-      desc: (fd.get('desc') || '').toString().trim(),
-      target: Number(fd.get('target') || 0),
-      current: Number(fd.get('current') || 0),
-      priority: (fd.get('priority') || 'medium').toString(),
-      category: (fd.get('category') || 'General').toString(),
-      due: (fd.get('due') || '').toString(),
-      monthly: Number(fd.get('monthly') || 0)
-    };
-    if (!data.name || !data.target || data.target <= 0) {
-      alert('Please enter Goal Title and Target Amount > 0'); return;
-    }
-
-    // Tạo card theo cùng markup đang dùng
-    const card = document.createElement('article');
-    card.className = 'sv-card';
-    card.dataset.name = data.name;
-    card.dataset.current = String(data.current);
-    card.dataset.target = String(data.target);
-    card.dataset.due = data.due;
-    card.dataset.priority = data.priority;
-    card.innerHTML = `
+    art.innerHTML = `
       <header class="sv-card-hd">
         <div class="sv-card-title">
           <span class="material-icons sv-ic">savings</span>
           <div class="sv-card-txt">
-            <strong>${data.name}</strong>
-            <small class="muted">${data.desc ? data.desc : 'Saving for ' + data.name.toLowerCase()}</small>
+            <strong>${esc(data.title)}</strong>
+            <small class="muted">${esc('Saving for ' + (data.title||'').toLowerCase())}</small>
           </div>
         </div>
         <div class="sv-tools">
-          <span class="sv-badge ${data.priority}">${data.priority}</span>
-          <button class="sv-icon" title="Edit"><span class="material-icons">edit</span></button>
-          <button class="sv-icon" title="Duplicate"><span class="material-icons">content_copy</span></button>
-          <button class="sv-icon" title="More"><span class="material-icons">more_vert</span></button>
+          <span class="sv-badge ${data.priority}">${esc(data.priority)}</span>
+          <button class="sv-icon" title="Edit" data-edit><span class="material-icons">edit</span></button>
+          <button class="sv-icon" title="Delete" data-delete><span class="material-icons">delete</span></button>
         </div>
       </header>
 
       <div class="sv-amt">
-        <div class="sv-amt-left">${cur}<span class="js-current">${Number(data.current).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span></div>
-        <div class="sv-amt-right">/ ${cur}${Number(data.target).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div class="sv-amt-left">${cur}<span class="js-current">${Number(data.current).toLocaleString('vi-VN',{maximumFractionDigits:2})}</span></div>
+        <div class="sv-amt-right">/ ${cur}${Number(data.target).toLocaleString('vi-VN',{maximumFractionDigits:2})}</div>
       </div>
 
-      <div class="sv-bar"><span></span></div>
+      <div class="sv-bar"><span style="width:${pct}%"></span></div>
       <div class="sv-row">
-        <div class="muted"><span class="js-pct">0</span>% complete</div>
-        <div class="sv-due js-due">Due: ${data.due || '-'}</div>
+        <div class="muted"><span class="js-pct">${pct.toFixed(1)}</span>% complete</div>
+        <div class="sv-due js-due">Due: ${esc(data.due || '')}</div>
       </div>
 
       <div class="sv-quick">
@@ -185,94 +170,68 @@ function recomputeMonthly() {
       <div class="sv-hint">
         <div class="sv-hint-title">
           <span class="material-icons">trending_up</span> Monthly contribution:
-          <strong>${cur}<span class="js-monthly">${(data.monthly||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span></strong>
+          <strong>${cur}<span class="js-monthly">${Number(data.monthly||0).toLocaleString('vi-VN',{maximumFractionDigits:2})}</span></strong>
         </div>
         <div class="sv-hint-sub muted">
-          At this rate, you'll reach your goal in <span class="js-months">–</span> months
+          At this rate, you'll reach your goal in <span class="js-months">${monthsToGoal(data.current, data.target, data.monthly)}</span> months
         </div>
       </div>
     `;
-
-    document.querySelector('.sv-grid')?.appendChild(card);
-
-    // gắn handler + tính toán lại giống các card cũ
-    // reuse các hàm đã có trong file (updateCard & recomputeMonthly)
-    if (typeof updateCard === 'function') {
-      updateCard(card);
-    }
-    // gán click cho quick add
-    card.querySelectorAll('.sv-chip').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const add = Number(btn.dataset.add||0);
-        const curEl = card.querySelector('.js-current');
-        const curNum = Number(String(curEl.textContent).replace(/[, ]/g,'')) + add;
-        curEl.textContent = curNum.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-        if (typeof updateCard === 'function') updateCard(card);
-        if (typeof recomputeMonthly === 'function') recomputeMonthly();
-      });
-    });
-
-    if (typeof recomputeMonthly === 'function') recomputeMonthly();
-    form.reset(); close();
-  });
-})();
-// === Modal Edit Goal ===
-(function setupEditGoal() {
-  const $  = (s, r = document) => r.querySelector(s);
-  const modal = $('#editModal');
-  const title = $('#editTitle');
-  const form  = $('#editForm');
-  let editingCard = null;
-
-  function open(card) {
-    editingCard = card;
-    const name = card.dataset.name || 'Goal';
-    title.textContent = `Edit Goal - ${name}`;
-
-    const cur = Number(String(card.querySelector('.js-current').textContent).replace(/[, ]/g, '')) || 0;
-    const override = Number(card.dataset.monthlyOverride || 0);
-
-    form.current.value = cur;
-    form.monthly.value = override > 0 ? override : 0;
-
-    modal.classList.add('show');
-    modal.setAttribute('aria-hidden', 'false');
-  }
-  function close() {
-    modal.classList.remove('show');
-    modal.setAttribute('aria-hidden', 'true');
-    editingCard = null;
+    bindCard(art);
+    return art;
   }
 
-  // Delegation: mọi click vào [data-edit] đều mở modal
-  document.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-edit]');
-    if (!btn) return;
-    const card = btn.closest('.sv-card');
-    if (card) open(card);
+  // ---- Add Goal ----
+  newBtn?.addEventListener('click', ()=>{
+    const d = new Date(); d.setMonth(d.getMonth()+6);
+    addForm.due.value = d.toISOString().slice(0,10);
+    openModal(addModal);
   });
 
-  modal.querySelector('.modal-close')?.addEventListener('click', close);
-  modal.querySelector('[data-close]')?.addEventListener('click', close);
-  modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
-
-  form.addEventListener('submit', (e) => {
+  addForm?.addEventListener('submit', (e)=>{
     e.preventDefault();
-    if (!editingCard) return;
+    const fd = new FormData(addForm);
+    const title    = (fd.get('title')||'').toString().trim();
+    const current  = N(fd.get('current'));
+    const target   = N(fd.get('target'));
+    const priority = (fd.get('priority')||'medium').toString();
+    const due      = (fd.get('due')||'').toString();
+    const monthly  = N(fd.get('monthly'));
+    if (!title || !(target>0)) { alert('Please enter Goal Title and Target > 0'); return; }
 
-    const newCur     = Number(form.current.value || 0);
-    const newMonthly = Number(form.monthly.value || 0);
+    const card = buildCard({ title, current, target, priority, due, monthly });
+    grid.prepend(card);
+    recalcAll();
 
-    // cập nhật current
-    const curEl = editingCard.querySelector('.js-current');
-    curEl.textContent = newCur.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-    // set/unset override
-    if (newMonthly > 0) editingCard.dataset.monthlyOverride = String(newMonthly);
-    else delete editingCard.dataset.monthlyOverride;
-
-    updateCard(editingCard);
-    recomputeMonthly();
-    close();
+    closeModal(addModal);   // <-- tự đóng modal sau khi thêm
+    addForm.reset();
+    toast('Goal added');
   });
+
+  // ---- Modal close wiring ----
+  addModal?.querySelector('.modal-close')?.addEventListener('click', ()=> closeModal(addModal));
+  addModal?.querySelector('[data-close]')?.addEventListener('click', ()=> closeModal(addModal));
+  addModal?.addEventListener('click', e=>{ if(e.target===addModal) closeModal(addModal); });
+
+  editModal?.querySelector('.modal-close')?.addEventListener('click', ()=> closeModal(editModal));
+  editModal?.querySelector('[data-close]')?.addEventListener('click', ()=> closeModal(editModal));
+  editModal?.addEventListener('click', e=>{ if(e.target===editModal) closeModal(editModal); });
+
+  // ---- Init ----
+  $$('.sv-card', grid).forEach(card=>{
+    if (!('monthly' in card.dataset)) card.dataset.monthly = '0';
+    bindCard(card);
+    setCardUI(card, {}); // đồng bộ UI
+  });
+  recalcAll();
+
+  // ---- Helpers ----
+  function toast(msg){
+    const d = document.createElement('div');
+    d.textContent = msg;
+    d.style.cssText='position:fixed;right:16px;bottom:16px;background:#111827;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:9999';
+    document.body.appendChild(d);
+    setTimeout(()=>d.remove(), 1600);
+  }
+  function esc(s){ return String(s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m])); }
 })();

@@ -1,26 +1,34 @@
 {% extends "base.html" %}
+{% block title %}Expenses{% endblock %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/expenses.css') }}">
+{% endblock %}
+
 {% block content %}
-<section class="hero">
-  <h1>Expenses Tracker</h1>
-  <p class="muted">Track and manage your daily expenses</p>
+<section class="ex-header">
+  <h1 class="ex-title">Expenses Tracker</h1>
+  <p class="ex-sub">Track and manage your daily expenses</p>
 </section>
 
 <!-- KPI Cards -->
-<section class="cards">
-  <div class="kcard k-blue">
-    <div class="k-top"><div>Total Spent (Month)</div><span class="material-icons">payments</span></div>
-    <div class="k-value">{{ CURRENCY }}{{ total_spent }}</div>
+<section class="exp-kpis">
+  <div class="exp-kpi blue">
+    <div class="label">Total Spent (Month)</div>
+    <div class="value" id="kpiTotalSpent">₫0</div>
+    <div class="icon"><span class="material-icons">credit_card</span></div>
   </div>
-  <div class="kcard k-purple">
-    <div class="k-top"><div><b>Number of Transactions</b></div><span class="material-icons">receipt</span></div>
-    <div class="k-value">{{ num_transactions }}</div>
+  <div class="exp-kpi purple">
+    <div class="label">Number of Transactions</div>
+    <div class="value" id="kpiTxCount">0</div>
+    <div class="icon"><span class="material-icons">receipt_long</span></div>
   </div>
-  <div class="kcard k-orange">
-    <div class="k-top"><div>Average per Transaction</div><span class="material-icons">stacked_line_chart</span></div>
-    <div class="k-value">{{ CURRENCY }}{{ avg_transaction }}</div>
+  <div class="exp-kpi orange">
+    <div class="label">Average per Transaction</div>
+    <div class="value" id="kpiAvgTx">₫0</div>
+    <div class="icon"><span class="material-icons">trending_up</span></div>
   </div>
 </section>
-
 <!-- List + Filter + Add -->
 <section class="panel">
   <div class="row" style="gap:12px; align-items: center;">
@@ -30,7 +38,8 @@
       <!-- Filter -->
       <form method="get" action="{{ url_for('expenses') }}" style="display:flex; align-items: center; gap: 8px;">
         <span class="material-icons" style="font-size:20px; color:#64748b">filter_list</span>
-        <select name="category" onchange="this.form.submit()" style="padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;">
+        <select id="catFilter" name="category"
+            style="padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;">
           <option value="All" {{ 'selected' if selected=='All' else '' }}>All Categories</option>
           {% for cat in categories %}
             <option value="{{ cat }}" {{ 'selected' if selected==cat else '' }}>{{ cat }}</option>
@@ -38,51 +47,169 @@
         </select>
       </form>
       <!-- Add Expense -->
-      <a class="btn btn-primary" href="#" title="Add Expense">
-        <span class="material-icons">add</span>
-        <span>Add Expense</span>
+      <button class="btn btn-primary" id="addExpenseBtn">
+        <span class="material-icons">add</span>Add Expense</button>
       </a>
     </div>
   </div>
+<!-- Modal: Add Expense -->
+  <div class="modal-backdrop" id="expModal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>Add New Expense</h3>
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    <form id="expForm" class="modal-body">
+      <label>
+        <span>Description *</span>
+        <input name="desc" type="text" placeholder="e.g., Lunch at cafeteria" required>
+      </label>
 
-  <!-- Expenses List -->
-  <div class="tlist" style="margin-top:12px; display:grid; gap:10px;">
-    {% for e in expenses %}
-      <div class="titem">
-        <div class="ico"><span class="material-icons">shopping_bag</span></div>
-        <div style="flex:1">
-          <div class="name">{{ e.name }}</div>
-          <div class="sub">
-            {{ e.date }} &nbsp;|&nbsp; {{ e.method }}
-            {% if e.category %}
-              <span class="badge
-                {% if e.category in ['Ăn uống','Food & Dining'] %} orange
-                {% elif e.category in ['Di chuyển','Transportation'] %} blue
-                {% elif e.category in ['Giải trí','Entertainment'] %} purple
-                {% elif e.category in ['Mua sắm','Shopping'] %} green
-                {% elif e.category in ['Hóa đơn','Bills'] %} red
-                {% else %} yellow {% endif %}">
-                {{ e.category }}
-              </span>
-            {% endif %}
-          </div>
-        </div>
+      <label>
+        <span>Amount *</span>
+        <input name="amount" type="number" step="0.01" min="0.01" required>
+      </label>
 
-        <div class="amt neg">{{ CURRENCY }}{{ e.amount_str }}</div>
+      <label>
+        <span>Category *</span>
+        <select name="category" required>
+          {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </label>
 
-        <!-- actions -->
-        <div style="display:flex; gap:6px; margin-left:8px;">
-          <button class="btn icon" title="Edit" onclick="alert('Demo: Edit expense')">
-            <span class="material-icons">edit</span>
-          </button>
-          <button class="btn icon" title="Delete" onclick="if(confirm('Delete this expense?')) alert('Demo: Deleted')">
-            <span class="material-icons">delete</span>
-          </button>
-        </div>
+      <label>
+        <span>Date</span>
+        <input name="date" type="date">
+      </label>
+
+      <label>
+        <span>Payment Method</span>
+        <select name="method">
+          <option value="" disabled selected>Select a payment method</option>
+          <option value="Cash">Cash</option>
+          <option value="Credit-Card">Credit Card</option>
+          <option value="Debit-Card" >Debit Card</option>
+          <option value="Digital-Wallet">Digital Wallet</option>
+          <option value="Bank-Transfer">Bank Transfer</option>
+        </select>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Expense</button>
       </div>
-    {% else %}
-      <div class="flash-item" style="background:#fff;">No expenses found.</div>
-    {% endfor %}
+    </form>
   </div>
+</div>
+
+<!-- Modal: Edit Expense -->
+<div class="modal-backdrop" id="expEditModal" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="expEditTitle">Edit Expense</h3>
+      <button class="modal-close" type="button" aria-label="Close">&times;</button>
+    </div>
+    <form id="expEditForm" class="modal-body">
+      <label>
+        <span>Description *</span>
+        <input name="desc" type="text" required>
+      </label>
+
+      <label>
+        <span>Amount *</span>
+        <input name="amount" type="number" step="0.01" min="0.01" required>
+      </label>
+
+      <label>
+        <span>Category *</span>
+        <select name="category" required>
+          {% for cat in categories %}
+            <option value="{{ cat }}">{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label>
+        <span>Date</span>
+        <input name="date" type="date">
+      </label>
+
+      <label>
+        <span>Payment Method</span>
+        <select name="method">
+          <option>Cash</option>
+          <option>Credit Card</option>
+          <option>Debit Card</option>
+          <option>Digital Wallet</option>
+          <option>Bank Transfer</option>
+        </select>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" data-close>Cancel</button>
+        <button type="submit" class="btn btn-primary">Update Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+  <!-- Expenses List -->
+  <div id="expList" class="tlist" style="margin-top:12px; display:grid; gap:10px;">
+  {% for e in expenses %}
+  <div
+    class="titem exp-row"
+    data-id="srv-{{ loop.index }}"
+    data-desc="{{ e.name }}"
+    data-category="{{ e.category }}"
+    data-date="{{ e.date }}"
+    data-method="{{ e.method }}"
+    data-amount="{{ (-e.amount) if e.amount < 0 else e.amount }}"
+  >
+    <div class="ico"><span class="material-icons">shopping_bag</span></div>
+    <div style="flex:1">
+      <div class="name">{{ e.name }}</div>
+      <div class="sub">
+        {{ e.date }} &nbsp;|&nbsp; {{ e.method }}
+        {% if e.category %}
+          <span class="badge
+            {% if e.category in ['Ăn uống','Food & Dining'] %} orange
+            {% elif e.category in ['Di chuyển','Transportation'] %} blue
+            {% elif e.category in ['Giải trí','Entertainment'] %} purple
+            {% elif e.category in ['Mua sắm','Shopping'] %} green
+            {% elif e.category in ['Hóa đơn','Bills'] %} red
+            {% else %} yellow {% endif %}">
+            {{ e.category }}
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="amt neg" data-amount="{{ (-e.amount) if e.amount < 0 else e.amount }}">
+      {{ CURRENCY }}{{ e.amount_str }}
+    </div>
+
+    <div style="display:flex; gap:6px; margin-left:8px;">
+      <button class="btn icon" title="Edit" data-edit data-id="srv-{{ loop.index }}">
+        <span class="material-icons">edit</span>
+      </button>
+      <button class="btn icon" title="Delete" data-delete data-id="srv-{{ loop.index }}">
+        <span class="material-icons">delete</span>
+      </button>
+    </div>
+  </div>
+  {% else %}
+    <div class="flash-item" style="background:#fff;">No expenses found.</div>
+  {% endfor %}
+</div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.CURRENCY   = {{ CURRENCY|tojson }};
+  window.expenses   = {{ expenses|tojson }};    // danh sách đang render
+  window.categories = {{ categories|tojson }};  // cho filter
+</script>
+<script src="{{ url_for('static', filename='js/expenses.js') }}"></script>
 {% endblock %}

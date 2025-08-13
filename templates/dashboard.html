@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
 {% block content %}
 
 <!-- Hero -->
@@ -35,9 +38,22 @@
 <section style="margin-bottom:10px">
   <h3 style="margin:0 0 10px">Quick Actions</h3>
   <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
-    <a class="btn btn-primary"><span class="material-icons">add</span>Add Expense</a>
-    <button class="btn btn-outline" style="border-color:#cbd5e1"><span class="material-icons">tune</span>Manage Budget</button>
-    <button class="btn btn-outline" style="border-color:#cbd5e1"><span class="material-icons">savings</span>Set Savings Goal</button>
+    <!-- Add Expense -->
+    <a href="{{ url_for('expenses') }}?action=add" 
+    class="btn btn-primary" style="border-color:#cbd5e1">
+    <span class="material-icons">add</span>
+    Add Expense
+  </a>
+    <!-- Manage Budget -->
+    <a href="{{ url_for('budget') }}" class="btn btn-outline" style="border-color:#cbd5e1">
+    <span class="material-icons">tune</span>
+    Manage Budget
+    </a>
+    <!-- set saving goal button -->
+    <a href="{{ url_for('savings') }}" class="btn btn-outline" style="border-color:#cbd5e1">
+    <span class="material-icons">savings</span>
+    Set Savings Goal
+</a>
   </div>
 </section>
 
@@ -114,19 +130,26 @@
   </div>
 </section>
 
-<!-- ===== Lower 3-column area ===== -->
-<section class="grid three" style="margin-top:12px">
+<!-- ===== Lower 3-column area (3 columns) ===== -->
+<section class="grid three" id="dash-bottom">
   <!-- Recent Transactions -->
   <div class="panel list">
     <div class="panel-head">
       <h3>Recent Transactions</h3>
-      <div>
-        <button class="btn icon"><span class="material-icons">tune</span></button>
-        <a class="btn btn-outline" style="padding:8px 10px"><span class="material-icons">visibility</span>View All</a>
+
+      <!-- actions bên phải (sort + view all) -->
+      <div class="dash-actions">
+        <button id="sortRecentBtn" class="icon-btn-compact" title="Sort by amount">
+          <span class="material-icons" aria-hidden="true">swap_vert</span>
+        </button>
+        <a class="btn btn-outline" style="padding:8px 10px"
+           href="{{ url_for('expenses') }}#expList">
+          <span class="material-icons">visibility</span>View All
+        </a>
       </div>
     </div>
 
-    <div class="tlist">
+    <div id="recentList" class="tlist">
       {% for t in recent %}
       <div class="titem">
         <div class="ico"><span class="material-icons">
@@ -136,6 +159,7 @@
           {% elif t.is_income %}payments
           {% else %}receipt_long{% endif %}
         </span></div>
+
         <div class="meta">
           <div class="name">{{ t.name }}</div>
           <div class="sub">
@@ -143,6 +167,7 @@
             {{ t.date }}
           </div>
         </div>
+
         <div class="amt {{ 'pos' if t.is_income else 'neg' }}">
           {{ '+' if t.is_income else '' }}{{ t.amount_str if not t.is_income else '' ~ t.amount_str }}
         </div>
@@ -161,9 +186,10 @@
   <div class="panel">
     <div class="panel-head">
       <h3>Budget Overview</h3>
-      <button class="btn icon"><span class="material-icons">settings</span>Manage</button>
+      <a class="btn icon" href="{{ url_for('budget') }}#budgetList">
+        <span class="material-icons">settings</span>Manage
+      </a>
     </div>
-
     <div class="panel" style="background:#f8fbff;border-color:#e6eefc">
       <div class="row" style="font-weight:700">
         <span>Monthly Budget</span>
@@ -196,7 +222,9 @@
   <div class="panel">
     <div class="panel-head">
       <h3>Savings Goals</h3>
-      <button class="btn icon"><span class="material-icons">add</span>Add Goal</button>
+      <a class="btn icon" href="{{ url_for('savings') }}#new-goal">
+        <span class="material-icons">add</span>Add Goal
+      </a>
     </div>
 
     <div class="panel" style="background:#f1f9f1;border-color:#e0f2e9">
@@ -232,6 +260,7 @@
     </div>
   </div>
 </section>
+
 
 {% block scripts %}
 <script>

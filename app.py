@@ -14,6 +14,24 @@ sd.CURRENCY = "₫"
 def fmt_vnd(v: float) -> str:
     return f"{round(v):,}".replace(",", ".")
 
+# ---------- helpers cho Dashboard ----------
+def compute_pie_from_expenses(expenses):
+    """
+    Gom nhóm chi tiêu theo 5 category cố định trong PIECHART_ORDER.
+    Bỏ qua thu nhập (amount > 0) và các category ngoài 5 nhóm -> dồn vào 'Others' (không vẽ).
+    """
+    sums = {k: 0 for k in sd.PIECHART_ORDER}
+    for e in expenses:
+        amt = e.get("amount", 0)
+        if amt >= 0:   # chỉ tính chi tiêu
+            continue
+        cat = sd.canon_cat(e.get("category", ""), "expense")
+        if cat in sums:
+            sums[cat] += -amt  # amount < 0 => lấy trị tuyệt đối
+    labels = sd.PIECHART_ORDER
+    values = [sums[k] for k in labels]
+    return labels, values
+
 # ---------- ONE SOURCE OF TRUTH cho Budget KPI ----------
 def compute_budget_totals():
     """Tính tổng ngân sách/thực chi/còn lại & % dùng."""
@@ -26,15 +44,27 @@ def compute_budget_totals():
 
 @app.route("/")
 def dashboard():
+     # chuẩn hoá category cho sample_expenses
+    normalized = []
+    for t in sd.sample_expenses:
+        t2 = dict(t)
+        t2["category"] = sd.canon_cat(t.get("category", ""), "expense")
+        normalized.append(t2)
+
     # Recent transactions
     def badge_of(cat, is_income):
-        if cat in ("Ăn uống", "Đồ ăn", "Groceries"): return ("Ăn uống", "orange")
-        if cat in ("Di chuyển", "Transport"):         return ("Di chuyển", "blue")
-        if cat in ("Sách vở", "Textbooks"):           return ("Sách vở", "purple")
-        if is_income:                                  return ("Thu nhập", "green")
-        return (cat or "Khác", "yellow")
+        cat = sd.canon_cat(cat, "expense")
+        if cat == "Food & Dining":
+            return ("Food & Dining", "orange")
+        if cat == "Transportation":
+            return ("Transportation", "blue")
+        if cat == "Textbooks":
+            return ("Textbooks", "purple")
+        if is_income:
+            return ("Income", "green")
+        return (cat or "Others", "yellow")
 
-    recent = sorted(sd.sample_expenses, key=lambda x: x["date"], reverse=True)[:5]
+    recent = sorted(normalized, key=lambda x: x["date"], reverse=True)[:5]
     for t in recent:
         t["is_income"] = t["amount"] > 0
         t["amount_str"] = fmt_vnd(abs(t["amount"]))
@@ -44,100 +74,128 @@ def dashboard():
     def pct(spent, limit):
         return 0 if limit <= 0 else round(min(spent / limit * 100, 100), 1)
 
-    month_limit_raw, month_spent_raw, month_left_raw, month_pct = compute_budget_totals()
+    cats_raw = []
+    for c in sd.budget_categories:
+        c2 = dict(c)
+        c2["name"] = sd.canon_cat(c.get("name", ""), "budget")
+        cats_raw.append(c2)
+
+    month_limit = 18_000_000
+    month_spent = sum(c["spent"] for c in cats_raw)
+    month_left = max(month_limit - month_spent, 0)
+    month_pct = pct(month_spent, month_limit)
 
     cats = [
-        {**c,
-         "pct": pct(c.get("spent", 0), c.get("limit", 0)),
-         "left": max(c.get("limit", 0) - c.get("spent", 0), 0)}
-        for c in sd.budget_categories
+        {**c, "pct": pct(c["spent"], c["limit"]), "left": max(c["limit"] - c["spent"], 0)}
+        for c in cats_raw
     ]
-
     # Savings goals
     goals = []
     for g in sd.savings_goals:
         p = 0 if g["target"] <= 0 else round(min(g["current"] / g["target"] * 100, 100), 1)
-        goals.append({**g, "pct": p})
-    total_target  = sum(g["target"] for g in sd.savings_goals)
+        goals.append({**g, "pct": p, "category": sd.canon_cat(g.get("category", ""), "savings")})
+
+    total_target = sum(g["target"] for g in sd.savings_goals)
     total_current = sum(g["current"] for g in sd.savings_goals)
-    total_pct     = 0 if total_target == 0 else round(min(total_current / total_target * 100, 100), 1)
+    total_pct = 0 if total_target == 0 else round(min(total_current / total_target * 100, 100), 1)
+    
+    # Pie chart 5 nhóm lấy từ transactions đã chuẩn hoá
+    pie_labels, pie_values = compute_pie_from_expenses(normalized)
 
     return render_template(
         "dashboard.html",
         title="FinanceManager · Dashboard",
         active_page="dashboard",
         CURRENCY=sd.CURRENCY, fmt=fmt_vnd,
-
-        # KPIs + charts
         kpis=sd.kpis,
         days=sd.days, day_values=sd.day_values,
-        cat_labels=sd.cat_labels, cat_values=sd.cat_values,
-
-        # Panels (Budget overview đồng bộ)
+        cat_labels=pie_labels, cat_values=pie_values,   # <= đồng bộ
         recent=recent,
-        month_limit=fmt_vnd(month_limit_raw),
-        month_spent=fmt_vnd(month_spent_raw),
-        month_left=fmt_vnd(month_left_raw),
-        month_pct=month_pct,
-        cats=cats,
-
-        # Raw (nếu muốn dùng ở KPI khác)
-        month_limit_raw=month_limit_raw,
-        month_spent_raw=month_spent_raw,
-        month_left_raw=month_left_raw,
-
-        # Savings tổng
-        total_current=fmt_vnd(total_current),
-        total_target=fmt_vnd(total_target),
-        total_pct=total_pct,
+        month_limit=fmt_vnd(month_limit), month_spent=fmt_vnd(month_spent),
+        month_left=fmt_vnd(month_left), month_pct=month_pct, cats=cats,
+        total_current=fmt_vnd(total_current), total_target=fmt_vnd(total_target), total_pct=total_pct
     )
+
 
 @app.route("/expenses")
 def expenses():
-    expenses_all = [e for e in sd.sample_expenses if e["amount"] < 0]
-    categories = sorted({e.get("category", "Khác") for e in expenses_all})
+    expenses_all = []
+    for e in sd.sample_expenses:
+        if e["amount"] < 0:
+            e2 = dict(e)
+            e2["category"] = sd.canon_cat(e.get("category", ""), "expense")
+            expenses_all.append(e2)
+
+    categories = sd.EXPENSE_CATEGORIES[:]  # dùng taxonomy thống nhất
     selected = request.args.get("category", "All")
-    expenses_filtered = [e for e in expenses_all if selected == "All" or e.get("category") == selected]
+
+    # lọc tại server (vẫn giữ nếu bạn thích)
+    if selected != "All":
+        expenses_filtered = [e for e in expenses_all if e.get("category") == selected]
+    else:
+        expenses_filtered = expenses_all
 
     total_spent = sum(-e["amount"] for e in expenses_filtered)
     num_transactions = len(expenses_filtered)
     avg_transaction = (total_spent / num_transactions) if num_transactions else 0
+
     for e in expenses_filtered:
-        e["amount_str"] = fmt_vnd(-e["amount"])
+        e["amount_str"] = sd.fmt_vnd(-e["amount"])
 
     return render_template(
         "expenses.html",
         title="FinanceManager · Expenses",
         active_page="expenses",
         CURRENCY=sd.CURRENCY, fmt=fmt_vnd,
-        expenses=expenses_filtered, categories=categories, selected=selected,
-        total_spent=fmt_vnd(total_spent), num_transactions=num_transactions,
+        expenses=expenses_filtered,
+        categories=categories,     # <-- danh sách chuẩn
+        selected=selected,
+        total_spent=fmt_vnd(total_spent),
+        num_transactions=num_transactions,
         avg_transaction=fmt_vnd(avg_transaction),
     )
 
 @app.route("/budget")
 def budget():
-    month_limit_raw, month_spent_raw, month_left_raw, month_pct = compute_budget_totals()
-    cats = [
-        {**c,
-         "pct": 0 if c["limit"]<=0 else round(min(c["spent"]/c["limit"]*100, 100), 1),
-         "left": max(c["limit"] - c["spent"], 0)}
-        for c in sd.budget_categories
-    ]
+    # chuẩn hoá tên danh mục budget
+    def pct(spent, limit):
+        return 0 if limit <= 0 else round(min(spent/limit*100, 100), 1)
+
+    cats_norm = []
+    for c in sd.budget_categories:
+        c2 = dict(c)
+        c2["name"] = sd.canon_cat(c.get("name", ""), "budget")
+        cats_norm.append(c2)
+
+    month_limit = sum(c["limit"] for c in cats_norm) or 18_000_000
+    month_spent = sum(c["spent"] for c in cats_norm)
+    month_left  = max(month_limit - month_spent, 0)
+    month_pct   = pct(month_spent, month_limit)
+
+    cats = [{**c, "pct": pct(c["spent"], c["limit"]), "left": max(c["limit"]-c["spent"], 0)} for c in cats_norm]
+
     return render_template(
         "budget.html",
         title="FinanceManager · Budget",
         active_page="budget",
         CURRENCY=sd.CURRENCY, fmt=fmt_vnd,
-        month_limit=month_limit_raw,
-        month_spent=month_spent_raw,
-        month_left=month_left_raw,
+        month_limit=month_limit,
+        month_spent=month_spent,
+        month_left=month_left,
         month_pct=month_pct,
         cats=cats
     )
 
 @app.route("/analytics")
 def analytics():
+    # Pie cho Analytics cũng dùng cùng labels/values từ expenses
+    exp_norm = []
+    for e in sd.sample_expenses:
+        if e["amount"] < 0:
+            e2 = dict(e); e2["category"] = sd.canon_cat(e.get("category",""), "expense")
+            exp_norm.append(e2)
+    pie_labels, pie_values = compute_pie_from_expenses(exp_norm)
+
     return render_template(
         "analytics.html",
         title="FinanceManager · Analytics",
@@ -146,8 +204,8 @@ def analytics():
         months=sd.months,
         income_series=sd.income_series,
         spending_series=sd.spending_series,
-        cat_labels=sd.cat_labels,
-        cat_values=sd.cat_values,
+        cat_labels=pie_labels,     # <- dùng 5 nhóm cố định
+        cat_values=pie_values
     )
 
 @app.route("/savings")
@@ -155,7 +213,7 @@ def savings():
     goals = []
     for g in sd.savings_goals:
         p = 0 if g["target"] <= 0 else round(min(g["current"] / g["target"] * 100, 100), 1)
-        goals.append({**g, "pct": p})
+        goals.append({**g, "pct": p, "category": sd.canon_cat(g.get("category", ""), "savings")})
 
     total_target  = sum(g["target"] for g in sd.savings_goals)
     total_current = sum(g["current"] for g in sd.savings_goals)
@@ -169,7 +227,7 @@ def savings():
         goals=goals,
         total_current=fmt_vnd(total_current),
         total_target=fmt_vnd(total_target),
-        total_pct=total_pct,
+        total_pct=total_pct
     )
 
 if __name__ == "__main__":
