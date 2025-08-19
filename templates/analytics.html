@@ -108,6 +108,7 @@
   window.spending     = {{ spending_series | tojson }};
   window.catLabels    = {{ cat_labels | tojson }};
   window.catValues    = {{ cat_values | tojson }};
+  window.catColors    = {{ cat_colors | tojson }};
   window.CURRENCY     = {{ CURRENCY | tojson }};
   // Debug: kiểm tra dữ liệu pie chart
   console.log("catLabels", window.catLabels);
@@ -118,4 +119,7 @@
   }
 </script>
 <script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+<script>
+  window.chartCategoryColors = window.catColors;
+</script>
 {% endblock %}

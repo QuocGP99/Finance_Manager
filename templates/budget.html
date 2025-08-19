@@ -93,7 +93,7 @@
           </div>
           <div class="bi-tools">
             <span class="bi-amount">{{ CURRENCY }}{{ fmt(spent) }} / {{ CURRENCY }}{{ fmt(limit) }}</span>
-            <button class="sv-icon" data-edit title="Edit"><span class="material-icons">edit</span></button>
+            <button class="icon-btn" data-edit title="Edit"><span class="material-icons">edit</span></button>
             <button class="icon-btn" data-delete title="Delete"><span class="material-icons">delete</span></button>
           </div>
         </div>
@@ -117,6 +117,7 @@
 </section>
 
 <!-- Modal: Add/Edit Budget -->
+<!-- Modal: Add New Budget Category -->
 <div class="modal-backdrop" id="budgetModal" aria-hidden="true">
   <div class="modal">
     <div class="modal-head">
@@ -128,14 +129,18 @@
         <span>Category *</span>
         <select name="category" required>
           <option value="" disabled selected>Select a category</option>
-          {% for c in cats %}<option value="{{ c.name }}">{{ c.name }}</option>{% endfor %}
-          <option value="__custom__">+ Custom…</option>
+          <option value="Food & Dining">Food & Dining</option>
+          <option value="Transportation">Transportation</option>
+          <option value="Textbooks">Textbooks</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Housing">Housing</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Healthcare">Healthcare</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Personal Care">Personal Care</option>
+          <option value="Subscriptions">Subscriptions</option>
+          <option value="Other">Other</option>
         </select>
-      </label>
-
-      <label class="hide" id="customWrap">
-        <span>Custom Category *</span>
-        <input name="custom" type="text" placeholder="e.g., Healthcare">
       </label>
 
       <label>

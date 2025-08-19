@@ -10,6 +10,7 @@
   const S = Array.isArray(spending) ? spending : [];
   const CL = Array.isArray(catLabels) ? catLabels : [];
   const CV = Array.isArray(catValues) ? catValues : [];
+  const CC = Array.isArray(catColors) ? catColors : [];
 
   // Dropdown (UI only, null-safe)
   (function initPeriodDropdown() {
@@ -42,18 +43,25 @@
   // 2) Pie breakdown (doughnut)
   (function drawPieBreakdown() {
     const el = $('pieChart'); if (!el) return;
-    ChartHelpers.renderDoughnutWithPercents(el, CL, CV, { legendPos: 'right', currency: cur });
+    ChartHelpers.renderDoughnutWithPercents(el, CL, CV, { legendPos: 'right', currency: cur, backgroundColor: CC });
   })();
 
   // 3) Category Trends (line) – tạo dataset giả lập từ tổng từng category
   (function drawCategoryTrends() {
     const el = $('chartCategoryTrends'); if (!el) return;
     const baseMultipliers = [0.9, 1.0, 0.85, 1.2, 1.05];
-    const datasets = CL.slice(0, 4).map((name, idx) => {
+    const datasets = CL.map((name, idx) => {
       const total = CV[idx] || 0;
       const avg = total / Math.max(baseMultipliers.length, 1);
       const data = baseMultipliers.map((x, i) => Math.round(avg * x * (0.95 + 0.05 * ((i + idx) % 2))));
-      return { label: name, data, tension: 0.35, fill: false };
+      return {
+        label: name,
+        data,
+        tension: 0.35,
+        fill: false,
+        borderColor: CC[idx] || '#bab0ab',
+        backgroundColor: CC[idx] || '#bab0ab'
+      };
     });
     ChartHelpers.renderLineChart(el, M, datasets);
   })();

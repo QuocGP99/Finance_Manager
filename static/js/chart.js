@@ -4,13 +4,13 @@
 
   // Hàm vẽ Doughnut với % + tooltip currency
   function renderDoughnutWithPercents(canvasEl, labels, values, opts = {}) {
-    const { legendPos = 'right', currency = defaultCurrency } = opts;
+    const { legendPos = 'right', currency = defaultCurrency, backgroundColor } = opts;
     if (!(canvasEl && window.Chart)) return null;
     if (window.ChartDataLabels) Chart.register(ChartDataLabels);
 
     return new Chart(canvasEl, {
       type: 'doughnut',
-      data: { labels, datasets: [{ data: values }] },
+      data: { labels, datasets: [{ data: values, backgroundColor: backgroundColor }] },
       options: {
         responsive: true,
         maintainAspectRatio: false,

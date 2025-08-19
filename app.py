@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request
 import os
 import sample_data as sd
+from sample_data import get_piechart_colors
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev")
@@ -54,15 +55,16 @@ def dashboard():
     # Recent transactions
     def badge_of(cat, is_income):
         cat = sd.canon_cat(cat, "expense")
-        if cat == "Food & Dining":
-            return ("Food & Dining", "orange")
-        if cat == "Transportation":
-            return ("Transportation", "blue")
-        if cat == "Textbooks":
-            return ("Textbooks", "purple")
+        color_map = {
+            "Food & Dining": "blue",
+            "Transportation": "green",
+            "Textbooks": "yellow",
+            "Entertainment": "red",
+            "Housing": "purple"
+        }
         if is_income:
             return ("Income", "green")
-        return (cat or "Others", "yellow")
+        return (cat or "Others", color_map.get(cat, "gray"))
 
     recent = sorted(normalized, key=lambda x: x["date"], reverse=True)[:5]
     for t in recent:
@@ -101,7 +103,7 @@ def dashboard():
     
     # Pie chart 5 nhóm lấy từ transactions đã chuẩn hoá
     pie_labels, pie_values = compute_pie_from_expenses(normalized)
-
+    pie_colors = sd.get_piechart_colors(pie_labels)
     return render_template(
         "dashboard.html",
         title="FinanceManager · Dashboard",
@@ -109,7 +111,7 @@ def dashboard():
         CURRENCY=sd.CURRENCY, fmt=fmt_vnd,
         kpis=sd.kpis,
         days=sd.days, day_values=sd.day_values,
-        cat_labels=pie_labels, cat_values=pie_values,   # <= đồng bộ
+        cat_labels=pie_labels, cat_values=pie_values, cat_colors=pie_colors,
         recent=recent,
         month_limit=fmt_vnd(month_limit), month_spent=fmt_vnd(month_spent),
         month_left=fmt_vnd(month_left), month_pct=month_pct, cats=cats,
@@ -188,14 +190,13 @@ def budget():
 
 @app.route("/analytics")
 def analytics():
-    # Pie cho Analytics cũng dùng cùng labels/values từ expenses
     exp_norm = []
     for e in sd.sample_expenses:
         if e["amount"] < 0:
             e2 = dict(e); e2["category"] = sd.canon_cat(e.get("category",""), "expense")
             exp_norm.append(e2)
     pie_labels, pie_values = compute_pie_from_expenses(exp_norm)
-
+    pie_colors = sd.get_piechart_colors(pie_labels)
     return render_template(
         "analytics.html",
         title="FinanceManager · Analytics",
@@ -204,8 +205,7 @@ def analytics():
         months=sd.months,
         income_series=sd.income_series,
         spending_series=sd.spending_series,
-        cat_labels=pie_labels,     # <- dùng 5 nhóm cố định
-        cat_values=pie_values
+        cat_labels=pie_labels, cat_values=pie_values, cat_colors=pie_colors
     )
 
 @app.route("/savings")
@@ -231,4 +231,5 @@ def savings():
     )
 
 if __name__ == "__main__":
+    app.run(debug=True)
     app.run(debug=True)

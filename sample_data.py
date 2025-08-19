@@ -24,6 +24,12 @@ kpis = {
 # Quy ước: amount < 0 là CHI, amount > 0 là THU
 sample_expenses = [
     {"name": "Cà phê Starbucks", "amount": -49_000,  "date": "2025-08-01", "method": "Thẻ tín dụng", "category": "Ăn uống"},
+    {"name": "Sách Tài chính", "amount": -155_000,  "date": "2025-08-10", "method": "Chuyển khoản", "category": "Sách vở"},
+    {"name": "Bữa trưa văn phòng", "amount": -120_000, "date": "2025-08-11", "method": "Tiền mặt",     "category": "Ăn uống"},
+    {"name": "Taxi về nhà",     "amount": -200_000, "date": "2025-08-12", "method": "Thẻ ghi nợ",   "category": "Di chuyển"},
+    {"name": "Phim rạp cuối tuần", "amount": -180_000, "date": "2025-08-13", "method": "Tiền mặt",     "category": "Giải trí"},
+    {"name": "Thuê phòng trọ",  "amount": -1_500_000, "date": "2025-08-14", "method": "Chuyển khoản", "category": "Nhà ở"},
+    {"name": "Mua sách giáo khoa", "amount": -250_000,  "date": "2025-08-15", "method": "Thẻ tín dụng",  "category": "Sách vở"},
     {"name": "Vé xe buýt tháng", "amount": -350_000, "date": "2025-08-02", "method": "Thẻ ghi nợ",   "category": "Di chuyển"},
     {"name": "Giáo trình Vật lý","amount": -320_000, "date": "2025-08-03", "method": "Thẻ tín dụng", "category": "Sách vở"},
     {"name": "Lương part‑time",  "amount": 3_800_000,"date": "2025-08-04", "method": "Chuyển khoản", "category": "Thu nhập"},
@@ -31,11 +37,11 @@ sample_expenses = [
 
 # ===== Budget =====
 budget_categories = [
-    {"name": "Ăn uống",   "spent": 4_500_000, "limit": 5_000_000, "color": "red"},
-    {"name": "Di chuyển", "spent": 2_800_000, "limit": 3_000_000, "color": "red"},
+    {"name": "Ăn uống",   "spent": 4_500_000, "limit": 5_000_000, "color": "blue"},
+    {"name": "Di chuyển", "spent": 2_800_000, "limit": 3_000_000, "color": "green"},
     {"name": "Sách vở",   "spent": 2_000_000, "limit": 2_500_000, "color": "yellow"},
-    {"name": "Giải trí",  "spent": 1_400_000, "limit": 2_000_000, "color": "blue"},
-    {"name": "Nhà ở",     "spent": 6_000_000, "limit": 8_000_000, "color": "green"},
+    {"name": "Giải trí",  "spent": 1_400_000, "limit": 2_000_000, "color": "red"},
+    {"name": "Nhà ở",     "spent": 6_000_000, "limit": 8_000_000, "color": "purple"},
 ]
 
 # ===== Savings =====
@@ -68,10 +74,22 @@ SAVINGS_CATEGORIES = [
     "Housing", "Transportation", "Personal"
 ]
 
+CATEGORY_COLORS = {
+    "Food & Dining": "blue",
+    "Transportation": "green",
+    "Textbooks": "yellow",
+    "Entertainment": "red",
+    "Housing": "purple",
+    "Utilities": "orange",
+    "Healthcare": "cyan",
+    "Shopping": "pink",
+    "Others": "gray"
+}
+
 # Nhóm danh mục cho Budget
 BUDGET_CATEGORIES = [
-    "Utilities", "Healthcare", "Shopping", "Personal Care",
-    "Subscriptions", "Other"
+    "Food & Dining", "Transportation", "Textbooks", "Entertainment",
+    "Housing", "Utilities", "Healthcare", "Shopping", "Others"
 ]
 
 # Alias ↔ tên chuẩn (tiếng Việt/Anh…)
@@ -96,6 +114,19 @@ ALIASES = {
 
 # 5 danh mục sẽ vẽ Pie chart (theo thứ tự cố định)
 PIECHART_ORDER = ["Food & Dining", "Transportation", "Textbooks", "Entertainment", "Housing"]
+PIECHART_COLORS = {
+    "Food & Dining": "#3b82f6",       # blue
+    "Transportation": "#10b981",      # green
+    "Textbooks": "#f59e0b",           # yellow
+    "Entertainment": "#ef4444",       # red
+    "Housing": "#8b5cf6",             # purple
+}
+
+
+def get_piechart_colors(labels):
+    """Trả về danh sách màu cho PieChart theo đúng thứ tự labels."""
+    # Đảm bảo labels đúng thứ tự PIECHART_ORDER
+    return [PIECHART_COLORS.get(label, "#bab0ab") for label in labels]
 
 
 def canon_cat(name: str, domain: str) -> str:

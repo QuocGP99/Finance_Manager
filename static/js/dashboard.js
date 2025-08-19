@@ -9,10 +9,22 @@
     ChartHelpers.renderBarChart($('barChart'), labels, values, { label: 'Spending', currency: cur });
   }
 
+  const categoryColors = {
+  "Food & Dining": "#2563EB",      // Xanh dương
+  "Transportation": "#22C55E",     // Xanh lá
+  "Textbooks": "#F59E0B",          // Vàng
+  "Entertainment": "#EF4444",      // Đỏ
+  "Housing": "#8B5CF6",            // Tím
+};
+
   if (window.ChartHelpers && $('pieChart')) {
     const labels = Array.isArray(catLabels) ? catLabels : [];
     const values = Array.isArray(catValues) ? catValues : [];
-    ChartHelpers.renderDoughnutWithPercents($('pieChart'), labels, values, { legendPos: 'right', currency: cur });
+    ChartHelpers.renderDoughnutWithPercents($('pieChart'), labels, values, { 
+    legendPos: 'right',
+    currency: cur,
+    backgroundColor: labels.map(label => categoryColors[label] || '#cccccc') 
+  });
   }
 })();
 
