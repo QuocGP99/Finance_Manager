@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero">
+  <h1>Financial Dashboard</h1>
+  <p class="muted">Take control of your student finances with AI‑powered insights</p>
+</section>
+
+<!-- KPI cards -->
+<section class="cards">
+  <div class="kcard k-green">
+    <div class="k-top"><div>Total Balance</div><span class="material-icons">credit_card</span></div>
+    <div class="k-value">{{ CURRENCY }}{{ kpis.total_balance | fmt }}</div>
+    <div class="k-sub">+2.1% from last month</div>
+  </div>
+  <div class="kcard k-blue">
+    <div class="k-top"><div>Monthly Spent</div><span class="material-icons">trending_up</span></div>
+    <div class="k-value">{{ CURRENCY }}{{ kpis.monthly_spent | fmt }}</div>
+    <div class="k-sub">{{ "%.1f"|format((kpis.monthly_spent/1800.0)*100) }}% of budget used</div>
+  </div>
+  <div class="kcard k-purple">
+    <div class="k-top"><div>Savings Goal</div><span class="material-icons">center_focus_strong</span></div>
+    <div class="k-value">{{ CURRENCY }}{{ kpis.savings_goal_value | fmt }}</div>
+    <div class="k-sub">25.0% of {{ CURRENCY }}5000.00</div>
+  </div>
+  <div class="kcard k-orange">
+    <div class="k-top"><div>AI Score</div><span class="material-icons">psychology</span></div>
+    <div class="k-value">{{ "%.1f"|format(kpis.ai_score) }}/10</div>
+    <div class="k-sub">Good financial health</div>
+  </div>
+</section>
+
+<!-- Quick Actions -->
+<section style="margin-bottom:10px">
+  <h3 style="margin:0 0 10px">Quick Actions</h3>
+  <div class="actions" style="display:flex;gap:10px;flex-wrap:wrap">
+    <!-- Add Expense -->
+    <a href="{{ url_for('expenses.expenses') }}?action=add" 
+    class="btn btn-primary" style="border-color:#cbd5e1">
+    <span class="material-icons">add</span>
+    Add Expense
+  </a>
+    <!-- Manage Budget -->
+    <a href="{{ url_for('budget.budget') }}" class="btn btn-outline" style="border-color:#cbd5e1">
+    <span class="material-icons">tune</span>
+    Manage Budget
+    </a>
+    <!-- set saving goal button -->
+    <a href="{{ url_for('savings.savings') }}" class="btn btn-outline" style="border-color:#cbd5e1">
+    <span class="material-icons">savings</span>
+    Set Savings Goal
+</a>
+  </div>
+</section>
+
+<!-- Main grid: charts + insights -->
+<section class="grid two">
+  <!-- Spending Analysis -->
+  <div class="panel">
+    <div class="panel-head">
+      <h3>Spending Analysis <span class="muted" style="font-weight:600;margin-left:6px">Last 5 months</span></h3>
+    </div>
+
+    <div class="charts two" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <div class="muted" style="margin-bottom:6px">Monthly Spending Trend</div>
+        <canvas id="barChart"></canvas>
+      </div>
+      <div>
+        <div class="muted" style="margin-bottom:6px">Category Breakdown (This Month)</div>
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Category Details -->
+    <div style="margin-top:16px">
+      <div class="muted" style="margin-bottom:8px;font-weight:600">Category Details</div>
+      <div class="cat-list">
+        {% for i in range(cat_labels|length) %}
+          <div class="cat-row">
+            <span class="dot {% if i==0 %}blue{% elif i==1 %}green{% elif i==2 %}yellow{% elif i==3 %}red{% else %}purple{% endif %}"></span>
+            <span class="cat-name">{{ cat_labels[i] }}</span>
+            <strong class="cat-amt">{{ CURRENCY }}{{ "{:,.2f}".format(cat_values[i]) }}</strong>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Financial Insights -->
+  <div class="panel">
+    <div class="panel-head"><h3><span class="material-icons" style="vertical-align:middle;margin-right:6px;color:#7c3aed">psychology</span>AI Financial Insights</h3></div>
+
+    <div class="insight warn">
+      <div class="ic"><span class="material-icons">warning_amber</span></div>
+      <div class="tx">
+        <div class="title">High Food Spending <span class="chip high">high</span></div>
+        <p class="desc">You've spent 23% more on food this month. Consider meal prepping to save ₹150/month.</p>
+        <div class="tip">Potential savings: <strong>{{ CURRENCY }}150.00/month</strong></div>
+      </div>
+    </div>
+
+    <div class="insight ok">
+      <div class="ic"><span class="material-icons">check_circle</span></div>
+      <div class="tx">
+        <div class="title">Transportation Optimized <span class="chip low">low</span></div>
+        <p class="desc">Great job! You're saving {{CURRENCY}}45/month by using public transport instead of rideshares.</p>
+        <div class="tip">Potential savings: <strong>{{ CURRENCY }}45.00/month</strong></div>
+      </div>
+    </div>
+
+    <div class="insight mid">
+      <div class="ic"><span class="material-icons">insights</span></div>
+      <div class="tx">
+        <div class="title">Textbook Savings <span class="chip medium">medium</span></div>
+        <p class="desc">Try renting textbooks instead of buying. You could save up to ₹120 this semester.</p>
+        <div class="tip">Potential savings: <strong>{{CURRENCY}}120.00/month</strong></div>
+      </div>
+    </div>
+
+{% block scripts %}
+<script>
+  const catLabels  = {{ cat_labels|tojson }};
+  const catValues  = {{ cat_values|tojson }};
+  window.CURRENCY  = {{ CURRENCY|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
+{% endblock %}

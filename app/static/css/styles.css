@@ -234,3 +234,4 @@ canvas{max-width:100%}
   flex-wrap:wrap;             /* nhỏ màn hình thì tự xuống dòng trong panel, không phá grid */
 }
 .dash-rt-actions .btn.icon .material-icons{ font-size:18px; }
+

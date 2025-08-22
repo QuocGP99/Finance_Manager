@@ -28,20 +28,20 @@
       </div>
     </div>
     <nav class="nav">
-      <a class="{% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+      <a class="{% if request.endpoint=='dashboard.dashboard' %}active{% endif %}" href="{{ url_for('dashboard.dashboard') }}">
         <span class="material-icons">dashboard</span>Dashboard
       </a>
-      <a class="{% if request.endpoint=='expenses' %}active{% endif %}" href="{{ url_for('expenses') }}">
+      <a class="{% if request.endpoint=='expenses.expenses' %}active{% endif %}" href="{{ url_for('expenses.expenses') }}">
         <span class="material-icons">receipt_long</span>Expenses
       </a>
-      <a class="{% if request.endpoint=='budget' %}active{% endif %}" href="{{ url_for('budget') }}">
+      <a class="{% if request.endpoint=='budget.budget' %}active{% endif %}" href="{{ url_for('budget.budget') }}">
         <span class="material-icons">account_balance_wallet</span>Budget
       </a>
-      <a class="{% if request.endpoint=='analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
-        <span class="material-icons">analytics</span>Analytics
-      </a>
-      <a class="{% if request.endpoint=='savings' %}active{% endif %}" href="{{ url_for('savings') }}">
+      <a class="{% if request.endpoint=='savings.savings' %}active{% endif %}" href="{{ url_for('savings.savings') }}">
         <span class="material-icons">savings</span>Savings
+      </a>
+      <a class="{% if request.endpoint=='analytics.analytics' %}active{% endif %}" href="{{ url_for('analytics.analytics') }}">
+        <span class="material-icons">analytics</span>Analytics
       </a>
     </nav>
   </header>

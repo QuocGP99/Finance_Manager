@@ -36,7 +36,7 @@
 
     <div style="margin-left: auto; display: flex; gap: 10px; align-items: center;">
       <!-- Filter -->
-      <form method="get" action="{{ url_for('expenses') }}" style="display:flex; align-items: center; gap: 8px;">
+      <form method="get" action="{{ url_for('expenses.expenses') }}" style="display:flex; align-items: center; gap: 8px;">
         <span class="material-icons" style="font-size:20px; color:#64748b">filter_list</span>
         <select id="catFilter" name="category"
             style="padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;">
@@ -52,7 +52,7 @@
       </a>
     </div>
   </div>
-<!-- Modal: Add Expense -->
+<!-- Modal: Add New Expense -->
   <div class="modal-backdrop" id="expModal" aria-hidden="true">
   <div class="modal">
     <div class="modal-head">
@@ -67,14 +67,14 @@
 
       <label>
         <span>Amount *</span>
-        <input name="amount" type="number" step="0.01" min="0.01" required>
+        <input name="amount" type="number" step="1000" min="1000" required>
       </label>
 
       <label>
         <span>Category *</span>
         <select name="category" required>
           {% for cat in categories %}
-            <option value="{{ cat }}">{{ cat }}</option>
+            <option value="{{ cat.id }}">{{ cat.name }}</option>
           {% endfor %}
         </select>
       </label>
@@ -125,9 +125,14 @@
       <label>
         <span>Category *</span>
         <select name="category" required>
-          {% for cat in categories %}
-            <option value="{{ cat }}">{{ cat }}</option>
-          {% endfor %}
+          <option>Food & Dining</option>
+          <option>Transportation</option>
+          <option>Textbooks</option>
+          <option>Housing</option>
+          <option>Utilities</option>
+          <option>Healthcare</option>
+          <option>Shopping</option>
+          <option>Other</option>
         </select>
       </label>
 
@@ -173,11 +178,13 @@
         {{ e.date }} &nbsp;|&nbsp; {{ e.method }}
         {% if e.category %}
           <span class="badge
-            {% if e.category in ['Ăn uống','Food & Dining'] %} orange
-            {% elif e.category in ['Di chuyển','Transportation'] %} blue
-            {% elif e.category in ['Giải trí','Entertainment'] %} purple
+            {% if e.category in ['Ăn uống','Food & Dining'] %} blue
+            {% elif e.category in ['Di chuyển','Transportation'] %} green
+            {% elif e.category in ['Giải trí','Entertainment'] %} 
             {% elif e.category in ['Mua sắm','Shopping'] %} green
             {% elif e.category in ['Hóa đơn','Bills'] %} red
+            {% elif e.category in ['Nhà ở','Housing'] %} purple
+
             {% else %} yellow {% endif %}">
             {{ e.category }}
           </span>
@@ -207,9 +214,9 @@
 
 {% block scripts %}
 <script>
-  window.CURRENCY   = {{ CURRENCY|tojson }};
-  window.expenses   = {{ expenses|tojson }};    // danh sách đang render
-  window.categories = {{ categories|tojson }};  // cho filter
+  window.expenses = {{ expenses|tojson }};   // danh sách đang render
 </script>
 <script src="{{ url_for('static', filename='js/expenses.js') }}"></script>
 {% endblock %}
+
+
